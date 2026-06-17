@@ -1,0 +1,91 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --gold: #d4a017;
+  --gold-light: #efc040;
+  --luxo: #7c3aed;
+  --dark: #1a0533;
+}
+
+* { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  color: #1a1a1a;
+  background: #fefefe;
+}
+
+h1, h2, h3, .font-serif {
+  font-family: 'Playfair Display', serif;
+}
+
+/* BOTOES */
+.btn-gold {
+  @apply bg-gold-500 hover:bg-gold-600 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 inline-flex items-center gap-2;
+}
+.btn-luxo {
+  @apply bg-luxo-700 hover:bg-luxo-800 text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 inline-flex items-center gap-2;
+}
+.btn-outline {
+  @apply border-2 border-gold-500 text-gold-600 hover:bg-gold-500 hover:text-white font-semibold px-6 py-3 rounded-full transition-all duration-200 inline-flex items-center gap-2;
+}
+
+/* CARDS PRODUTO */
+.produto-card {
+  @apply bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 cursor-pointer group;
+}
+.produto-card:hover {
+  transform: translateY(-4px);
+}
+
+/* BADGES */
+.badge-novo { @apply bg-gold-500 text-white text-xs font-bold px-2 py-1 rounded-full; }
+.badge-oferta { @apply bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full; }
+.badge-destaque { @apply bg-luxo-700 text-white text-xs font-bold px-2 py-1 rounded-full; }
+
+/* INPUTS */
+.input-luxo {
+  @apply w-full border border-gray-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100 transition-all;
+}
+
+/* DIVIDER DOURADO */
+.divider-gold {
+  @apply flex items-center gap-4 my-8;
+}
+.divider-gold::before,
+.divider-gold::after {
+  content: '';
+  @apply flex-1 h-px bg-gradient-to-r from-transparent via-gold-300 to-transparent;
+}
+
+/* SCROLL BAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f8f8f8; }
+::-webkit-scrollbar-thumb { background: #d4a017; border-radius: 3px; }
+
+/* WHATSAPP FLUTUANTE */
+.whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  background: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  transition: all 0.3s;
+  animation: pulse-green 2s infinite;
+}
+.whatsapp-float:hover { transform: scale(1.1); }
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4); }
+  50% { box-shadow: 0 4px 30px rgba(37, 211, 102, 0.7); }
+}
