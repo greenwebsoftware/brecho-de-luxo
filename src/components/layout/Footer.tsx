@@ -1,19 +1,30 @@
+'use client'
 import Link from 'next/link'
+import { useState } from 'react'
 import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react'
 
 export default function Footer() {
+  const [email, setEmail] = useState('')
+
+  const handleNewsletter = (e: React.FormEvent) => {
+    e.preventDefault()
+    setEmail('')
+    alert('Inscrito com sucesso!')
+  }
+
   return (
     <footer className="bg-luxo-900 text-gray-300">
-      {/* NEWSLETTER */}
       <div className="bg-gradient-to-r from-gold-600 to-gold-500">
         <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="font-serif text-white text-xl font-bold">Fique por dentro das novidades</h3>
             <p className="text-gold-100 text-sm mt-1">Receba em primeira mao as novas chegadas e ofertas exclusivas</p>
           </div>
-          <form className="flex gap-2 w-full md:w-auto" onSubmit={e => e.preventDefault()}>
+          <form onSubmit={handleNewsletter} className="flex gap-2 w-full md:w-auto">
             <input
               type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
               placeholder="Seu melhor e-mail"
               className="flex-1 md:w-72 px-4 py-3 rounded-full text-sm text-gray-800 outline-none"
             />
@@ -25,9 +36,7 @@ export default function Footer() {
         </div>
       </div>
 
-      {/* LINKS */}
       <div className="max-w-7xl mx-auto px-4 py-14 grid grid-cols-2 md:grid-cols-4 gap-8">
-        {/* SOBRE */}
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-4">
             <div className="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center">
@@ -36,7 +45,7 @@ export default function Footer() {
             <span className="font-serif font-bold text-white text-lg">Brecho de Luxo</span>
           </div>
           <p className="text-sm text-gray-400 leading-relaxed mb-4">
-            Pecas de moda de luxo cuidadosamente selecionadas com qualidade garantida e preco acessivel.
+            Pecas de moda de luxo cuidadosamente selecionadas com qualidade garantida.
           </p>
           <div className="flex gap-3">
             <a href="https://instagram.com" target="_blank" rel="noreferrer"
@@ -50,7 +59,6 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* LOJA */}
         <div>
           <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Loja</h4>
           <ul className="space-y-2 text-sm">
@@ -64,13 +72,12 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* AJUDA */}
         <div>
           <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Ajuda</h4>
           <ul className="space-y-2 text-sm">
-            {[['Como Comprar', '/como-comprar'], ['Entregas e Prazos', '/entregas'],
-              ['Trocas e Devolucos', '/trocas'], ['Autenticidade', '/autenticidade'],
-              ['Minha Conta', '/conta'], ['Meus Pedidos', '/pedidos']].map(([l, h]) => (
+            {[['Sobre Nos', '/sobre'], ['Contato', '/contato'],
+              ['Trocas', '/trocas'], ['Minha Conta', '/conta'],
+              ['Meus Pedidos', '/pedidos']].map(([l, h]) => (
               <li key={h}>
                 <Link href={h} className="text-gray-400 hover:text-gold-400 transition-colors">{l}</Link>
               </li>
@@ -78,7 +85,6 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* CONTATO */}
         <div>
           <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Contato</h4>
           <ul className="space-y-3 text-sm">
@@ -90,26 +96,19 @@ export default function Footer() {
             </li>
             <li className="flex items-center gap-2 text-gray-400">
               <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <a href="mailto:contato@brechodeluxo.com.br" className="hover:text-gold-400 transition-colors">
-                contato@brechodeluxo.com.br
-              </a>
+              <span>contato@brechodeluxo.com.br</span>
             </li>
             <li className="flex items-start gap-2 text-gray-400">
               <MapPin className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" />
-              <span>Sao Paulo, SP<br />Atendimento online</span>
+              <span>Sao Paulo, SP</span>
             </li>
           </ul>
         </div>
       </div>
 
-      {/* RODAPE */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <span>© 2026 Brecho de Luxo. Todos os direitos reservados.</span>
-          <div className="flex gap-4">
-            <Link href="/privacidade" className="hover:text-gold-400 transition-colors">Privacidade</Link>
-            <Link href="/termos" className="hover:text-gold-400 transition-colors">Termos de Uso</Link>
-          </div>
           <span>Desenvolvido por <a href="#" className="text-gold-400">GreenWeb Softwares</a></span>
         </div>
       </div>

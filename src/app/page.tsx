@@ -3,27 +3,30 @@ import { ArrowRight, Shield, Truck, RefreshCw, Star } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase-server'
 
 async function getProdutosDestaque() {
-  const supabase = createServerClient()
-  const { data } = await supabase
-    .from('produtos')
-    .select('id, nome, preco_venda, preco_custo, imagem_url, imagens_site, estoque_atual, destaque, criado_em')
-    .eq('ativo', true)
-    .eq('visivel_site', true)
-    .gt('estoque_atual', 0)
-    .or('destaque.eq.true')
-    .order('criado_em', { ascending: false })
-    .limit(8)
-  return data || []
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('produtos')
+      .select('id, nome, preco_venda, imagem_url, imagens_site, estoque_atual, destaque, criado_em')
+      .eq('ativo', true)
+      .eq('visivel_site', true)
+      .gt('estoque_atual', 0)
+      .order('criado_em', { ascending: false })
+      .limit(8)
+    return data || []
+  } catch { return [] }
 }
 
 async function getCategorias() {
-  const supabase = createServerClient()
-  const { data } = await supabase
-    .from('categorias')
-    .select('id, nome')
-    .eq('ativo', true)
-    .limit(6)
-  return data || []
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('categorias')
+      .select('id, nome')
+      .eq('ativo', true)
+      .limit(6)
+    return data || []
+  } catch { return [] }
 }
 
 export default async function HomePage() {
@@ -43,12 +46,10 @@ export default async function HomePage() {
     <>
       {/* HERO */}
       <section className="relative bg-gradient-to-br from-luxo-900 via-luxo-800 to-luxo-900 min-h-[85vh] flex items-center overflow-hidden">
-        {/* Decoracao */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-20 left-10 w-72 h-72 rounded-full bg-gold-400 blur-3xl" />
           <div className="absolute bottom-20 right-10 w-96 h-96 rounded-full bg-gold-500 blur-3xl" />
         </div>
-
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-20 grid md:grid-cols-2 gap-12 items-center">
           <div>
             <div className="inline-flex items-center gap-2 bg-gold-500/20 border border-gold-500/30 rounded-full px-4 py-1.5 mb-6">
@@ -60,8 +61,7 @@ export default async function HomePage() {
               <span className="text-gold-400">com Historia</span>
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-md">
-              Pecas autenticas de marcas premium cuidadosamente selecionadas.
-              Qualidade garantida, preco acessivel, estilo inconfundivel.
+              Pecas autenticas de marcas premium cuidadosamente selecionadas. Qualidade garantida, preco acessivel.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/loja" className="btn-gold text-base">
@@ -88,14 +88,11 @@ export default async function HomePage() {
               </div>
             </div>
           </div>
-
-          {/* IMAGEM HERO */}
           <div className="hidden md:flex items-center justify-center">
             <div className="relative">
               <div className="w-80 h-96 bg-gradient-to-br from-gold-200 to-gold-400 rounded-3xl flex items-center justify-center text-8xl shadow-2xl">
                 👜
               </div>
-              {/* Cards flutuantes */}
               <div className="absolute -top-4 -left-8 bg-white rounded-2xl shadow-xl p-3 flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-sm">✓</div>
                 <div>
@@ -117,7 +114,6 @@ export default async function HomePage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 py-16">
           <div className="text-center mb-10">
             <h2 className="font-serif text-3xl font-bold text-luxo-900 mb-2">Explore por Categoria</h2>
-            <div className="divider-gold"><span className="text-gold-400 text-sm">Nossa Selecao</span></div>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
             {categorias.map(cat => (
@@ -127,8 +123,7 @@ export default async function HomePage() {
                   {cat.nome.toLowerCase().includes('bolsa') ? '👜' :
                    cat.nome.toLowerCase().includes('roupa') ? '👗' :
                    cat.nome.toLowerCase().includes('sapato') ? '👠' :
-                   cat.nome.toLowerCase().includes('acessorio') ? '💍' :
-                   cat.nome.toLowerCase().includes('oculos') ? '🕶️' : '✨'}
+                   cat.nome.toLowerCase().includes('acessorio') ? '💍' : '✨'}
                 </div>
                 <div className="text-sm font-medium text-gray-700 group-hover:text-gold-600">{cat.nome}</div>
               </Link>
@@ -149,10 +144,8 @@ export default async function HomePage() {
               Ver tudo <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {produtos.length === 0 ? (
-              // Placeholders quando nao tem produtos
               Array(8).fill(0).map((_, i) => (
                 <div key={i} className="produto-card">
                   <div className="aspect-square bg-gradient-to-br from-gold-50 to-gold-100 flex items-center justify-center text-5xl">
@@ -164,7 +157,7 @@ export default async function HomePage() {
                   </div>
                 </div>
               ))
-            ) : produtos.map(p => {
+            ) : produtos.map((p: {id: string; nome: string; preco_venda: number; imagem_url?: string; imagens_site?: string[]; estoque_atual: number; destaque: boolean}) => {
               const imgs = p.imagens_site as string[] | null
               const img = imgs?.[0] || p.imagem_url
               return (
@@ -183,29 +176,23 @@ export default async function HomePage() {
                       <span className="text-base font-bold text-gold-600">
                         {new Intl.NumberFormat('pt-BR', { style:'currency', currency:'BRL' }).format(p.preco_venda)}
                       </span>
-                      <span className="text-xs text-gray-400">{p.estoque_atual} un</span>
                     </div>
                   </div>
                 </Link>
               )
             })}
           </div>
-
           <div className="text-center mt-8 md:hidden">
             <Link href="/loja" className="btn-gold">Ver todos os produtos</Link>
           </div>
         </div>
       </section>
 
-      {/* BANNER PROMOCIONAL */}
+      {/* BANNER */}
       <section className="bg-gradient-to-r from-gold-500 to-gold-600 py-14">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-serif text-white text-3xl md:text-4xl font-bold mb-4">
-            Pecas unicas que contam historias
-          </h2>
-          <p className="text-gold-100 text-lg mb-8">
-            Cada peca do nosso brecho e selecionada com carinho para garantir qualidade e autenticidade.
-          </p>
+          <h2 className="font-serif text-white text-3xl md:text-4xl font-bold mb-4">Pecas unicas que contam historias</h2>
+          <p className="text-gold-100 text-lg mb-8">Cada peca e selecionada com carinho para garantir qualidade e autenticidade.</p>
           <Link href="/sobre" className="bg-white text-gold-700 font-semibold px-8 py-3 rounded-full hover:bg-gold-50 transition-colors inline-flex items-center gap-2">
             Conheca nossa historia <ArrowRight className="w-4 h-4" />
           </Link>
@@ -234,14 +221,13 @@ export default async function HomePage() {
             <h2 className="font-serif text-3xl font-bold text-white mb-2">O que dizem nossos clientes</h2>
             <div className="flex justify-center gap-1 mt-2">
               {[...Array(5)].map((_,i) => <Star key={i} className="w-5 h-5 fill-gold-400 text-gold-400" />)}
-              <span className="text-gold-400 text-sm ml-2">4.9/5 — 2.847 avaliacoes</span>
             </div>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { nome: 'Ana C.', texto: 'Comprei uma bolsa Louis Vuitton incrivel! Autenticidade verificada e entrega rapida. Ja e a terceira vez que compro aqui.', nota: 5 },
-              { nome: 'Patricia M.', texto: 'Atendimento excelente! Me ajudaram a escolher a peca perfeita. Qualidade acima da esperada para o preco.', nota: 5 },
-              { nome: 'Fernanda S.', texto: 'Site facil de navegar, fotos otimas e produto chegou exatamente como mostrado. Super recomendo!', nota: 5 },
+              { nome: 'Ana C.', texto: 'Comprei uma bolsa incrivel! Autenticidade verificada e entrega rapida.', nota: 5 },
+              { nome: 'Patricia M.', texto: 'Atendimento excelente! Qualidade acima da esperada para o preco.', nota: 5 },
+              { nome: 'Fernanda S.', texto: 'Site facil de navegar e produto chegou exatamente como mostrado.', nota: 5 },
             ].map((dep, i) => (
               <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <div className="flex gap-1 mb-3">
