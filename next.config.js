@@ -2,12 +2,10 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: [
-      'tvqljrsrlsecvzxokadq.supabase.co',
-      'res.cloudinary.com',
+    remotePatterns: [
+      { protocol: 'https', hostname: 'spdwesjpyfukmdhgiudx.supabase.co' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
     ],
   },
-  typescript: { ignoreBuildErrors: true },
-  eslint: { ignoreDuringBuilds: true },
 }
 module.exports = nextConfig
