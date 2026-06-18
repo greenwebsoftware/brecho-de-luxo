@@ -1,8 +1,10 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Search, Filter, X, ShoppingBag, Heart, ChevronDown } from 'lucide-react'
 import { useCarrinho } from '../../lib/carrinhoContext'
+import { CATEGORIAS, getCategoriaIcon } from '../../lib/menuConfig'
 
 interface Produto {
   id: string
@@ -12,19 +14,33 @@ interface Produto {
   imagens_site?: string[]
   estoque_atual: number
   destaque: boolean
+  subcategoria?: string
+  marca?: string
+  genero?: string
   categorias?: { nome: string }
 }
 
-export default function LojaPage() {
+function LojaContent() {
+  const searchParams = useSearchParams()
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [loading, setLoading] = useState(true)
-  const [busca, setBusca] = useState('')
+  const [busca, setBusca] = useState(searchParams.get('busca') || '')
   const [ordenar, setOrdenar] = useState('recentes')
   const [filtroAberto, setFiltroAberto] = useState(false)
   const [precoMax, setPrecoMax] = useState(5000)
   const [total, setTotal] = useState(0)
   const [pagina, setPagina] = useState(1)
   const { adicionarItem } = useCarrinho()
+
+  const cat = searchParams.get('cat') || ''
+  const subcategoria = searchParams.get('subcategoria') || ''
+  const marca = searchParams.get('marca') || ''
+  const genero = searchParams.get('genero') || ''
+
+  const categoriaAtiva = CATEGORIAS.find(c => c.slug === cat)
+  const subcategoriaLabel = categoriaAtiva?.tipo === 'genero'
+    ? categoriaAtiva.grupos?.flatMap(g => g.itens).find(i => i.slug === subcategoria)?.label
+    : categoriaAtiva?.itens?.find(i => i.slug === subcategoria || i.slug === marca)?.label
 
   const buscarProdutos = useCallback(async () => {
     setLoading(true)
@@ -33,6 +49,10 @@ export default function LojaPage() {
         limit: '16',
         page: String(pagina),
         ...(busca && { busca }),
+        ...(cat && { cat }),
+        ...(subcategoria && { subcategoria }),
+        ...(marca && { marca }),
+        ...(genero && { genero }),
       })
       const res = await fetch(`/api/produtos?${params}`)
       const data = await res.json()
@@ -41,15 +61,17 @@ export default function LojaPage() {
       setTotal(data.total || 0)
     } catch {}
     setLoading(false)
-  }, [busca, pagina])
+  }, [busca, pagina, cat, subcategoria, marca, genero])
 
   useEffect(() => {
     setPagina(1)
     buscarProdutos()
-  }, [busca])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [busca, cat, subcategoria, marca, genero])
 
   useEffect(() => {
-    buscarProdutos()
+    if (pagina > 1) buscarProdutos()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pagina])
 
   const ordenados = [...produtos].sort((a, b) => {
@@ -60,22 +82,88 @@ export default function LojaPage() {
 
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
+  const tituloPagina = subcategoriaLabel
+    ? subcategoriaLabel
+    : categoriaAtiva
+    ? categoriaAtiva.label
+    : 'Nossa Colecao'
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* HEADER DA LOJA */}
       <div className="bg-gradient-to-r from-luxo-900 to-luxo-800 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
-          <h1 className="font-serif text-white text-4xl font-bold mb-3">Nossa Colecao</h1>
+          {categoriaAtiva && (
+            <div className="text-3xl mb-2">{getCategoriaIcon(categoriaAtiva.slug)}</div>
+          )}
+          <h1 className="font-serif text-white text-4xl font-bold mb-3">{tituloPagina}</h1>
           <p className="text-gold-300 text-sm">
-            {total > 0 ? `${total} pecas disponíveis` : 'Carregando...'}
+            {total > 0 ? `${total} pecas disponíveis` : loading ? 'Carregando...' : 'Nenhuma peca encontrada'}
           </p>
+
+          {/* BREADCRUMB DE FILTROS ATIVOS */}
+          {(categoriaAtiva || subcategoriaLabel) && (
+            <div className="flex items-center justify-center gap-2 mt-4 text-xs">
+              <Link href="/loja" className="text-gold-300/60 hover:text-gold-300">Loja</Link>
+              {categoriaAtiva && (
+                <>
+                  <span className="text-gold-300/40">/</span>
+                  <Link href={`/loja?cat=${categoriaAtiva.slug}`} className="text-gold-300/60 hover:text-gold-300">
+                    {categoriaAtiva.label}
+                  </Link>
+                </>
+              )}
+              {genero && (
+                <>
+                  <span className="text-gold-300/40">/</span>
+                  <span className="text-gold-300/60 capitalize">{genero}</span>
+                </>
+              )}
+              {subcategoriaLabel && (
+                <>
+                  <span className="text-gold-300/40">/</span>
+                  <span className="text-gold-200 font-medium">{subcategoriaLabel}</span>
+                </>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+        {/* FILTROS RAPIDOS DE CATEGORIA */}
+        {!cat && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            {CATEGORIAS.map(c => (
+              <Link key={c.slug} href={`/loja?cat=${c.slug}`}
+                className="flex items-center gap-1.5 bg-white border border-gray-200 rounded-full px-4 py-2 text-sm text-gray-700 hover:border-gold-400 hover:text-gold-600 transition-colors">
+                <span>{getCategoriaIcon(c.slug)}</span> {c.label}
+              </Link>
+            ))}
+          </div>
+        )}
+
+        {/* FILTRO ATIVO - REMOVER */}
+        {(cat || subcategoria || marca || genero) && (
+          <div className="flex items-center gap-2 mb-6 flex-wrap">
+            <span className="text-xs text-gray-400">Filtros ativos:</span>
+            {cat && (
+              <span className="flex items-center gap-1 bg-gold-50 text-gold-700 text-xs font-medium px-3 py-1.5 rounded-full">
+                {categoriaAtiva?.label}
+                <Link href="/loja"><X className="w-3 h-3 cursor-pointer" /></Link>
+              </span>
+            )}
+            {subcategoriaLabel && (
+              <span className="flex items-center gap-1 bg-luxo-50 text-luxo-700 text-xs font-medium px-3 py-1.5 rounded-full">
+                {subcategoriaLabel}
+                <Link href={`/loja?cat=${cat}`}><X className="w-3 h-3 cursor-pointer" /></Link>
+              </span>
+            )}
+          </div>
+        )}
+
         {/* BARRA DE FILTROS */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
-          {/* BUSCA */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -91,7 +179,6 @@ export default function LojaPage() {
             )}
           </div>
 
-          {/* ORDENAR */}
           <div className="relative">
             <select
               value={ordenar}
@@ -105,7 +192,6 @@ export default function LojaPage() {
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
 
-          {/* FILTRO */}
           <button
             onClick={() => setFiltroAberto(!filtroAberto)}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl border text-sm font-medium transition-colors ${
@@ -116,7 +202,6 @@ export default function LojaPage() {
           </button>
         </div>
 
-        {/* PAINEL FILTROS */}
         {filtroAberto && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
@@ -160,10 +245,8 @@ export default function LojaPage() {
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
             <h3 className="font-serif text-xl text-gray-700 mb-2">Nenhuma peca encontrada</h3>
-            <p className="text-gray-400 text-sm mb-6">Tente buscar por outro termo</p>
-            <button onClick={() => { setBusca(''); setPrecoMax(5000) }} className="btn-gold text-sm">
-              Ver todas as pecas
-            </button>
+            <p className="text-gray-400 text-sm mb-6">Tente outro filtro ou busca</p>
+            <Link href="/loja" className="btn-gold text-sm">Ver todas as pecas</Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -186,7 +269,7 @@ export default function LojaPage() {
                         <span className="absolute top-2 left-2 badge-destaque">Destaque</span>
                       )}
                       <button
-                        onClick={e => { e.preventDefault(); /* favoritar */ }}
+                        onClick={e => { e.preventDefault() }}
                         className="absolute top-2 right-2 w-8 h-8 bg-white rounded-full shadow flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
                       >
                         <Heart className="w-4 h-4 text-gray-400 hover:text-red-400" />
@@ -199,6 +282,7 @@ export default function LojaPage() {
                         {p.nome}
                       </h3>
                     </Link>
+                    {p.marca && <p className="text-xs text-gray-400 mt-0.5">{p.marca}</p>}
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-base font-bold text-gold-600">{fmt(p.preco_venda)}</span>
                       <button
@@ -221,7 +305,6 @@ export default function LojaPage() {
           </div>
         )}
 
-        {/* CARREGAR MAIS */}
         {produtos.length < total && (
           <div className="text-center mt-10">
             <button
@@ -235,5 +318,13 @@ export default function LojaPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function LojaPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <LojaContent />
+    </Suspense>
   )
 }
