@@ -3,10 +3,11 @@ import { createServerClient } from '../../../../../lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
   const supabase = createServerClient()
   const body = await req.json()
-  const { error } = await supabase.from('pedidos_online').update(body).eq('id', params.id)
+  const { error } = await supabase.from('pedidos_online').update(body).eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
   return NextResponse.json({ ok: true })
 }

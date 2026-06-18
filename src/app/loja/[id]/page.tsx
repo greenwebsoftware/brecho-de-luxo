@@ -28,8 +28,9 @@ async function getProdutosRelacionados(categoriaId: string, id: string) {
   return data || []
 }
 
-export default async function ProdutoPage({ params }: { params: { id: string } }) {
-  const produto = await getProduto(params.id)
+export default async function ProdutoPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const produto = await getProduto(id)
   if (!produto) notFound()
 
   const relacionados = produto.categoria_id
