@@ -1,7 +1,11 @@
 'use client'
-export default function WhatsAppFloat() {
+
+export default function WhatsAppFloat({ whatsapp }: { whatsapp?: string }) {
+  const numero = whatsapp || '5511900000000'
+  const link = `https://wa.me/${numero}?text=Ola!%20Vim%20pelo%20site%20do%20Brecho%20de%20Luxo`
+
   return (
-    <a href="https://wa.me/5511000000000?text=Ola!%20Vim%20pelo%20site%20do%20Brecho%20de%20Luxo"
+    <a href={link}
       target="_blank" rel="noreferrer"
       className="whatsapp-float"
       title="Fale conosco no WhatsApp">

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { Eye, EyeOff, Star, StarOff, Package, ShoppingBag, TrendingUp, Clock } from 'lucide-react'
+import { Eye, EyeOff, Star, StarOff, Package, ShoppingBag, TrendingUp, Clock, Lock, LogOut, Save, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 interface Produto {
@@ -15,25 +15,82 @@ interface Pedido {
   integrado_modasystem: boolean
 }
 
+interface SiteConfig {
+  whatsapp?: string
+  instagram?: string
+  facebook?: string
+  tiktok?: string
+  email_contato?: string
+  frete_gratis_acima?: number
+  frete_fixo?: number
+}
+
 export default function AdminLojaPage() {
-  const [aba, setAba] = useState<'pedidos' | 'produtos'>('pedidos')
+  const [autenticado, setAutenticado] = useState<boolean | null>(null)
+  const [senha, setSenha] = useState('')
+  const [loginLoading, setLoginLoading] = useState(false)
+  const [loginErro, setLoginErro] = useState('')
+
+  const [aba, setAba] = useState<'pedidos' | 'produtos' | 'config'>('pedidos')
   const [produtos, setProdutos] = useState<Produto[]>([])
   const [pedidos, setPedidos] = useState<Pedido[]>([])
+  const [config, setConfig] = useState<SiteConfig>({})
+  const [salvandoConfig, setSalvandoConfig] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    carregarDados()
+    verificarLogin()
   }, [])
+
+  const verificarLogin = async () => {
+    const res = await fetch('/api/admin/produtos')
+    if (res.status === 401) {
+      setAutenticado(false)
+    } else {
+      setAutenticado(true)
+      carregarDados()
+    }
+  }
+
+  const fazerLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoginLoading(true)
+    setLoginErro('')
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ senha }),
+      })
+      if (res.ok) {
+        setAutenticado(true)
+        carregarDados()
+      } else {
+        setLoginErro('Senha incorreta')
+      }
+    } catch {
+      setLoginErro('Erro ao conectar')
+    }
+    setLoginLoading(false)
+  }
+
+  const sair = async () => {
+    await fetch('/api/admin/login', { method: 'DELETE' })
+    setAutenticado(false)
+    setSenha('')
+  }
 
   const carregarDados = async () => {
     setLoading(true)
-    const [pRes, pedRes] = await Promise.all([
+    const [pRes, pedRes, confRes] = await Promise.all([
       fetch('/api/admin/produtos'),
       fetch('/api/admin/pedidos'),
+      fetch('/api/admin/config'),
     ])
-    const [pData, pedData] = await Promise.all([pRes.json(), pedRes.json()])
+    const [pData, pedData, confData] = await Promise.all([pRes.json(), pedRes.json(), confRes.json()])
     setProdutos(pData.data || [])
     setPedidos(pedData.data || [])
+    setConfig(confData.data || {})
     setLoading(false)
   }
 
@@ -67,6 +124,22 @@ export default function AdminLojaPage() {
     toast.success('Status atualizado!')
   }
 
+  const salvarConfig = async () => {
+    setSalvandoConfig(true)
+    try {
+      const res = await fetch('/api/admin/config', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config),
+      })
+      if (res.ok) toast.success('Configurações salvas!')
+      else toast.error('Erro ao salvar')
+    } catch {
+      toast.error('Erro ao salvar')
+    }
+    setSalvandoConfig(false)
+  }
+
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
   const fmtData = (d: string) => new Date(d).toLocaleDateString('pt-BR')
 
@@ -86,12 +159,62 @@ export default function AdminLojaPage() {
     produtosVisiveis: produtos.filter(p => p.visivel_site).length,
   }
 
+  // TELA DE CARREGAMENTO INICIAL
+  if (autenticado === null) {
+    return (
+      <div className="min-h-screen bg-luxo-900 flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-gold-400 animate-spin" />
+      </div>
+    )
+  }
+
+  // TELA DE LOGIN
+  if (!autenticado) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-luxo-900 to-luxo-800 flex items-center justify-center px-4">
+        <div className="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-sm">
+          <div className="w-14 h-14 rounded-full bg-gold-100 flex items-center justify-center mx-auto mb-4">
+            <Lock className="w-7 h-7 text-gold-600" />
+          </div>
+          <h1 className="font-serif text-2xl font-bold text-luxo-900 text-center mb-1">Área Restrita</h1>
+          <p className="text-gray-400 text-sm text-center mb-6">Painel administrativo da loja</p>
+
+          <form onSubmit={fazerLogin} className="space-y-4">
+            <input
+              type="password"
+              value={senha}
+              onChange={e => setSenha(e.target.value)}
+              placeholder="Digite a senha de acesso"
+              autoFocus
+              className="input-luxo text-center"
+            />
+            {loginErro && (
+              <p className="text-red-500 text-sm text-center">{loginErro}</p>
+            )}
+            <button type="submit" disabled={loginLoading}
+              className="btn-gold w-full justify-center disabled:opacity-50">
+              {loginLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+              {loginLoading ? 'Verificando...' : 'Entrar'}
+            </button>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
+  // PAINEL ADMIN
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-luxo-900 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-          <h1 className="font-serif text-white text-2xl font-bold">Painel da Loja Virtual</h1>
-          <p className="text-gold-300 text-sm mt-1">Gerencie produtos e pedidos do site</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between">
+          <div>
+            <h1 className="font-serif text-white text-2xl font-bold">Painel da Loja Virtual</h1>
+            <p className="text-gold-300 text-sm mt-1">Gerencie produtos, pedidos e configurações do site</p>
+          </div>
+          <button onClick={sair}
+            className="flex items-center gap-2 text-gold-300 hover:text-white text-sm transition-colors">
+            <LogOut className="w-4 h-4" /> Sair
+          </button>
         </div>
       </div>
 
@@ -118,12 +241,12 @@ export default function AdminLojaPage() {
 
         {/* ABAS */}
         <div className="flex gap-1 bg-gray-100 rounded-xl p-1 w-fit mb-6">
-          {(['pedidos', 'produtos'] as const).map(a => (
+          {(['pedidos', 'produtos', 'config'] as const).map(a => (
             <button key={a} onClick={() => setAba(a)}
               className={`px-5 py-2 rounded-lg text-sm font-medium transition-all capitalize ${
                 aba === a ? 'bg-white shadow-sm text-luxo-900' : 'text-gray-500 hover:text-gray-700'
               }`}>
-              {a}
+              {a === 'config' ? 'Configurações' : a}
             </button>
           ))}
         </div>
@@ -235,6 +358,99 @@ export default function AdminLojaPage() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* CONFIGURACOES */}
+        {aba === 'config' && (
+          <div className="bg-white rounded-2xl shadow-sm p-6 max-w-2xl">
+            <h3 className="font-semibold text-gray-800 mb-1">Contato e Redes Sociais</h3>
+            <p className="text-xs text-gray-400 mb-6">
+              Essas informações aparecem automaticamente no rodapé, no botão flutuante e no cabeçalho do site
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">WhatsApp (com DDD e país)</label>
+                <input
+                  value={config.whatsapp || ''}
+                  onChange={e => setConfig({ ...config, whatsapp: e.target.value })}
+                  placeholder="5511900000000"
+                  className="input-luxo"
+                />
+                <p className="text-[11px] text-gray-400 mt-1">Formato: 55 + DDD + número, sem espaços ou símbolos</p>
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Instagram (usuário)</label>
+                <input
+                  value={config.instagram || ''}
+                  onChange={e => setConfig({ ...config, instagram: e.target.value })}
+                  placeholder="brechodeluxo"
+                  className="input-luxo"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Facebook (usuário ou página)</label>
+                <input
+                  value={config.facebook || ''}
+                  onChange={e => setConfig({ ...config, facebook: e.target.value })}
+                  placeholder="brechodeluxo"
+                  className="input-luxo"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">TikTok (usuário)</label>
+                <input
+                  value={config.tiktok || ''}
+                  onChange={e => setConfig({ ...config, tiktok: e.target.value })}
+                  placeholder="brechodeluxo"
+                  className="input-luxo"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">E-mail de Contato</label>
+                <input
+                  type="email"
+                  value={config.email_contato || ''}
+                  onChange={e => setConfig({ ...config, email_contato: e.target.value })}
+                  placeholder="contato@brechodeluxo.com.br"
+                  className="input-luxo"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t border-gray-100">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Frete grátis a partir de (R$)</label>
+                  <input
+                    type="number"
+                    value={config.frete_gratis_acima || ''}
+                    onChange={e => setConfig({ ...config, frete_gratis_acima: Number(e.target.value) })}
+                    placeholder="299"
+                    className="input-luxo"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Frete fixo (R$)</label>
+                  <input
+                    type="number"
+                    value={config.frete_fixo || ''}
+                    onChange={e => setConfig({ ...config, frete_fixo: Number(e.target.value) })}
+                    placeholder="19.90"
+                    className="input-luxo"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button onClick={salvarConfig} disabled={salvandoConfig}
+              className="btn-gold mt-6 disabled:opacity-50">
+              {salvandoConfig ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+              {salvandoConfig ? 'Salvando...' : 'Salvar Configurações'}
+            </button>
           </div>
         )}
       </div>

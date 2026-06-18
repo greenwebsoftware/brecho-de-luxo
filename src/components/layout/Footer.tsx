@@ -3,7 +3,15 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react'
 
-export default function Footer() {
+interface FooterProps {
+  whatsapp?: string
+  instagram?: string
+  facebook?: string
+  tiktok?: string
+  emailContato?: string
+}
+
+export default function Footer({ whatsapp, instagram, facebook, emailContato }: FooterProps) {
   const [email, setEmail] = useState('')
 
   const handleNewsletter = (e: React.FormEvent) => {
@@ -11,6 +19,15 @@ export default function Footer() {
     setEmail('')
     alert('Inscrito com sucesso!')
   }
+
+  const waNumero = whatsapp || '5511900000000'
+  const waLink = `https://wa.me/${waNumero}`
+  const igLink = `https://instagram.com/${instagram || 'brechodeluxo'}`
+  const fbLink = `https://facebook.com/${facebook || 'brechodeluxo'}`
+  const emailFinal = emailContato || 'contato@brechodeluxo.com.br'
+  const telExibido = waNumero.length >= 12
+    ? `(${waNumero.slice(2,4)}) 9-${waNumero.slice(5,9)}-${waNumero.slice(9)}`
+    : '(11) 9-0000-0000'
 
   return (
     <footer className="bg-luxo-900 text-gray-300">
@@ -48,11 +65,11 @@ export default function Footer() {
             Peças de moda de luxo cuidadosamente selecionadas com qualidade garantida.
           </p>
           <div className="flex gap-3">
-            <a href="https://instagram.com" target="_blank" rel="noreferrer"
+            <a href={igLink} target="_blank" rel="noreferrer"
               className="w-9 h-9 rounded-full bg-white/10 hover:bg-gold-500 flex items-center justify-center transition-colors">
               <Instagram className="w-4 h-4" />
             </a>
-            <a href="https://facebook.com" target="_blank" rel="noreferrer"
+            <a href={fbLink} target="_blank" rel="noreferrer"
               className="w-9 h-9 rounded-full bg-white/10 hover:bg-gold-500 flex items-center justify-center transition-colors">
               <Facebook className="w-4 h-4" />
             </a>
@@ -90,13 +107,13 @@ export default function Footer() {
           <ul className="space-y-3 text-sm">
             <li className="flex items-center gap-2 text-gray-400">
               <Phone className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <a href="https://wa.me/5511000000000" className="hover:text-gold-400 transition-colors">
-                (11) 9-0000-0000
+              <a href={waLink} className="hover:text-gold-400 transition-colors">
+                {telExibido}
               </a>
             </li>
             <li className="flex items-center gap-2 text-gray-400">
               <Mail className="w-4 h-4 text-gold-400 flex-shrink-0" />
-              <span>contato@brechodeluxo.com.br</span>
+              <span>{emailFinal}</span>
             </li>
             <li className="flex items-start gap-2 text-gray-400">
               <MapPin className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" />
