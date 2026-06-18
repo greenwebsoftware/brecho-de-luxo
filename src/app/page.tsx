@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Shield, Truck, RefreshCw, Star } from 'lucide-react'
-import { createServerClient } from '@/lib/supabase-server'
+import { createServerClient } from '../lib/supabase-server'
 
 async function getProdutosDestaque() {
   try {

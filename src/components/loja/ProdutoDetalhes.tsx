@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, Heart, ArrowLeft, Shield, Truck, RefreshCw, Star } from 'lucide-react'
-import { useCarrinho } from '@/lib/carrinhoContext'
+import { useCarrinho } from '../../lib/carrinhoContext'
 
 interface Grade { tamanho: string; cor: string; estoque: number }
 interface Produto {

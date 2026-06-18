@@ -4,7 +4,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import WhatsAppFloat from '@/components/layout/WhatsAppFloat'
 import { Toaster } from 'react-hot-toast'
-import { CarrinhoProvider } from '@/lib/carrinhoContext'
+import { CarrinhoProvider } from '../lib/carrinhoContext'
 
 export const metadata: Metadata = {
   title: 'Brecho de Luxo — Moda Premium com Historia',

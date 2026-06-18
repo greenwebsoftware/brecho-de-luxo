@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, Search, Menu, X, Heart, User } from 'lucide-react'
-import { useCarrinho } from '@/lib/carrinhoContext'
+import { useCarrinho } from '../../lib/carrinhoContext'
 
 export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false)

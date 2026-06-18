@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { Search, Filter, X, ShoppingBag, Heart, ChevronDown } from 'lucide-react'
-import { useCarrinho } from '@/lib/carrinhoContext'
+import { useCarrinho } from '../../lib/carrinhoContext'
 
 interface Produto {
   id: string

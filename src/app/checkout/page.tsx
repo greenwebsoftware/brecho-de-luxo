@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { useCarrinho } from '@/lib/carrinhoContext'
+import { useCarrinho } from '../../lib/carrinhoContext'
 import { Trash2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
