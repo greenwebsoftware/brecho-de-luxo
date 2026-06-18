@@ -1,7 +1,5 @@
-// Webhook Mercado Pago - Integracao automatica com ModaSystem
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { MercadoPagoConfig, Payment } from 'mercadopago'
 
 export async function POST(req: NextRequest) {
   const supabase = createServerClient()
@@ -10,22 +8,19 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { type, data } = body
 
-    // So processa notificacoes de pagamento
     if (type !== 'payment') return NextResponse.json({ ok: true })
 
-    // Busca detalhes do pagamento no MP
-    const mp = new MercadoPagoConfig({
-      accessToken: process.env.MP_ACCESS_TOKEN!
+    // Busca pagamento no MP via fetch
+    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, {
+      headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` },
     })
-    const payment = new Payment(mp)
-    const pagamento = await payment.get({ id: data.id })
+    const pagamento = await mpRes.json()
 
-    const status = pagamento.status // approved, pending, rejected
-    const pedidoId = pagamento.external_reference // nosso ID do pedido
+    const status = pagamento.status
+    const pedidoId = pagamento.external_reference
 
     if (!pedidoId) return NextResponse.json({ ok: true })
 
-    // Atualiza status do pedido
     const novoStatus = status === 'approved' ? 'pagamento_aprovado'
       : status === 'rejected' ? 'cancelado'
       : 'aguardando_pagamento'
@@ -36,7 +31,6 @@ export async function POST(req: NextRequest) {
       atualizado_em: new Date().toISOString(),
     }).eq('id', pedidoId)
 
-    // SE APROVADO — integra com ModaSystem
     if (status === 'approved') {
       await integrarComModaSystem(pedidoId, supabase)
     }
@@ -49,7 +43,6 @@ export async function POST(req: NextRequest) {
 }
 
 async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<typeof createServerClient>) {
-  // Busca pedido completo
   const { data: pedido } = await supabase
     .from('pedidos_online')
     .select('*, itens_pedido_online(*)')
@@ -58,9 +51,7 @@ async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<type
 
   if (!pedido || pedido.integrado_modasystem) return
 
-  // Cria venda no ModaSystem
   const { data: venda, error } = await supabase.from('vendas').insert({
-    cliente_id: null, // pedido online sem vinculo de cliente fisico
     desconto: pedido.desconto || 0,
     subtotal: pedido.subtotal,
     total: pedido.total,
@@ -69,12 +60,8 @@ async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<type
     observacoes: `Venda Online #${pedido.numero} — ${pedido.cliente_nome}`,
   }).select().single()
 
-  if (error || !venda) {
-    console.error('Erro ao criar venda no ModaSystem:', error)
-    return
-  }
+  if (error || !venda) return
 
-  // Cria itens da venda e baixa estoque
   for (const item of (pedido.itens_pedido_online || [])) {
     await supabase.from('itens_venda').insert({
       venda_id: venda.id,
@@ -86,10 +73,8 @@ async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<type
       subtotal: item.subtotal,
     })
 
-    // Baixa estoque
     if (item.produto_id) {
-      const { data: prod } = await supabase
-        .from('produtos').select('estoque_atual').eq('id', item.produto_id).single()
+      const { data: prod } = await supabase.from('produtos').select('estoque_atual').eq('id', item.produto_id).single()
       if (prod) {
         const novoEst = Math.max(0, prod.estoque_atual - item.quantidade)
         await supabase.from('produtos').update({ estoque_atual: novoEst }).eq('id', item.produto_id)
@@ -105,7 +90,6 @@ async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<type
     }
   }
 
-  // Lanca no financeiro
   await supabase.from('financeiro').insert({
     tipo: 'receita',
     descricao: `Venda Online #${pedido.numero} — ${pedido.cliente_nome}`,
@@ -116,19 +100,15 @@ async function integrarComModaSystem(pedidoId: string, supabase: ReturnType<type
     categoria: 'Vendas Online',
   })
 
-  // Lanca pagamento da venda
   await supabase.from('venda_pagamentos').insert({
     venda_id: venda.id,
     forma_pagamento: pedido.forma_pagamento || 'pix',
     valor: pedido.total,
   })
 
-  // Marca pedido como integrado
   await supabase.from('pedidos_online').update({
     integrado_modasystem: true,
     venda_modasystem_id: venda.id,
     status: 'em_separacao',
   }).eq('id', pedidoId)
-
-  console.log(`Pedido ${pedido.numero} integrado ao ModaSystem — Venda ${venda.id}`)
 }

@@ -1,7 +1,5 @@
-// API de pagamento - cria preferencia no Mercado Pago
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
-import { MercadoPagoConfig, Preference } from 'mercadopago'
 
 export async function POST(req: NextRequest) {
   const supabase = createServerClient()
@@ -13,7 +11,6 @@ export async function POST(req: NextRequest) {
     if (!itens || itens.length === 0)
       return NextResponse.json({ error: 'Carrinho vazio' }, { status: 400 })
 
-    // Calcula totais
     const subtotal = itens.reduce((s: number, i: { preco: number; quantidade: number }) => s + i.preco * i.quantidade, 0)
     const total = subtotal + frete - desconto
 
@@ -41,10 +38,7 @@ export async function POST(req: NextRequest) {
 
     // Cria itens do pedido
     await supabase.from('itens_pedido_online').insert(
-      itens.map((i: {
-        produto_id: string; nome: string; codigo?: string;
-        tamanho?: string; cor?: string; preco: number; quantidade: number
-      }) => ({
+      itens.map((i: { produto_id: string; nome: string; codigo?: string; tamanho?: string; cor?: string; preco: number; quantidade: number }) => ({
         pedido_id: pedido.id,
         produto_id: i.produto_id,
         produto_nome: i.nome,
@@ -57,44 +51,42 @@ export async function POST(req: NextRequest) {
       }))
     )
 
-    // Cria preferencia no Mercado Pago
-    const mp = new MercadoPagoConfig({
-      accessToken: process.env.MP_ACCESS_TOKEN!
+    // Cria preferencia no Mercado Pago via fetch
+    const mpBody = {
+      external_reference: pedido.id,
+      items: itens.map((i: { nome: string; preco: number; quantidade: number }) => ({
+        title: i.nome,
+        unit_price: Number(i.preco),
+        quantity: Number(i.quantidade),
+        currency_id: 'BRL',
+      })),
+      payer: { name: cliente.nome, email: cliente.email },
+      payment_methods: { installments: 6 },
+      back_urls: {
+        success: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/sucesso?pedido=${pedido.id}`,
+        failure: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/falha?pedido=${pedido.id}`,
+        pending: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/pendente?pedido=${pedido.id}`,
+      },
+      auto_return: 'approved',
+      notification_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook/mercadopago`,
+      statement_descriptor: 'BRECHO DE LUXO',
+    }
+
+    const mpRes = await fetch('https://api.mercadopago.com/checkout/preferences', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}`,
+      },
+      body: JSON.stringify(mpBody),
     })
 
-    const preference = new Preference(mp)
-    const pref = await preference.create({
-      body: {
-        external_reference: pedido.id,
-        items: itens.map((i: { nome: string; preco: number; quantidade: number }) => ({
-          title: i.nome,
-          unit_price: i.preco,
-          quantity: i.quantidade,
-          currency_id: 'BRL',
-        })),
-        payer: {
-          name: cliente.nome,
-          email: cliente.email,
-        },
-        payment_methods: {
-          excluded_payment_types: [],
-          installments: 6,
-        },
-        back_urls: {
-          success: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/sucesso?pedido=${pedido.id}`,
-          failure: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/falha?pedido=${pedido.id}`,
-          pending: `${process.env.NEXT_PUBLIC_SITE_URL}/pedidos/pendente?pedido=${pedido.id}`,
-        },
-        auto_return: 'approved',
-        notification_url: `${process.env.NEXT_PUBLIC_SITE_URL}/api/webhook/mercadopago`,
-        statement_descriptor: 'BRECHO DE LUXO',
-      }
-    })
+    const pref = await mpRes.json()
 
-    // Atualiza pedido com ID da preferencia
-    await supabase.from('pedidos_online').update({
-      gateway_id: pref.id,
-    }).eq('id', pedido.id)
+    if (!mpRes.ok)
+      return NextResponse.json({ error: 'Erro ao criar preferencia MP: ' + JSON.stringify(pref) }, { status: 400 })
+
+    await supabase.from('pedidos_online').update({ gateway_id: pref.id }).eq('id', pedido.id)
 
     return NextResponse.json({
       pedido_id: pedido.id,
