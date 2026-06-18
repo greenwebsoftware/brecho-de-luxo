@@ -24,16 +24,45 @@ export const CATEGORIAS: Categoria[] = [
   {
     label: 'Roupas',
     slug: 'roupas',
-    tipo: 'subcategoria',
-    itens: [
-      { label: 'Vestidos', slug: 'vestidos' },
-      { label: 'Blusas', slug: 'blusas' },
-      { label: 'Calcas', slug: 'calcas' },
-      { label: 'Saias', slug: 'saias' },
-      { label: 'Shorts', slug: 'shorts' },
-      { label: 'Casacos', slug: 'casacos' },
-      { label: 'Macacao', slug: 'macacao' },
-      { label: 'Lingerie', slug: 'lingerie' },
+    tipo: 'genero',
+    grupos: [
+      {
+        label: 'Feminino',
+        slug: 'feminino',
+        itens: [
+          { label: 'Vestidos', slug: 'vestidos' },
+          { label: 'Blusas', slug: 'blusas' },
+          { label: 'Calcas', slug: 'calcas-fem' },
+          { label: 'Saias', slug: 'saias' },
+          { label: 'Shorts', slug: 'shorts-fem' },
+          { label: 'Casacos', slug: 'casacos-fem' },
+          { label: 'Macacao', slug: 'macacao' },
+          { label: 'Lingerie', slug: 'lingerie' },
+          { label: 'Conjuntos', slug: 'conjuntos' },
+        ],
+      },
+      {
+        label: 'Masculino',
+        slug: 'masculino',
+        itens: [
+          { label: 'Calcas', slug: 'calcas-masc' },
+          { label: 'Camisas', slug: 'camisas' },
+          { label: 'Camisetas', slug: 'camisetas-masc' },
+          { label: 'Short e Bermuda', slug: 'short-bermuda' },
+          { label: 'Casacos', slug: 'casacos-masc' },
+        ],
+      },
+      {
+        label: 'Infantil',
+        slug: 'infantil',
+        itens: [
+          { label: 'Calcas', slug: 'calcas-infantil' },
+          { label: 'Camiseta', slug: 'camiseta-infantil' },
+          { label: 'Casacos', slug: 'casacos-infantil' },
+          { label: 'Pijamas', slug: 'pijamas-infantil' },
+          { label: 'Variadas', slug: 'variadas-infantil' },
+        ],
+      },
     ],
   },
   {
