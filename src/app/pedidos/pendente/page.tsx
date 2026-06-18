@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { Clock, ArrowRight } from 'lucide-react'
 
@@ -10,7 +11,7 @@ export default function PedidoPendentePage({ searchParams }: { searchParams: { p
         </div>
         <h1 className="font-serif text-3xl font-bold text-luxo-900 mb-3">Pagamento Pendente</h1>
         <p className="text-gray-500 mb-4">
-          Seu pedido foi criado e o pagamento esta sendo processado.
+          Seu pedido foi criado e o pagamento está sendo processado.
         </p>
         {searchParams.pedido && (
           <p className="text-sm text-gray-400 mb-4">
@@ -20,9 +21,9 @@ export default function PedidoPendentePage({ searchParams }: { searchParams: { p
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-8 text-left text-sm text-amber-800">
           <p className="font-semibold mb-2">O que acontece agora?</p>
           <ul className="space-y-1 list-disc list-inside text-amber-700">
-            <li>Se pagou com PIX, aguarde a confirmacao em ate 30 minutos</li>
-            <li>Se pagou com boleto, pode levar ate 3 dias uteis</li>
-            <li>Voce recebera um e-mail quando o pagamento for confirmado</li>
+            <li>Se pagou com PIX, aguarde a confirmação em até 30 minutos</li>
+            <li>Se pagou com boleto, pode levar até 3 dias úteis</li>
+            <li>Você receberá um e-mail quando o pagamento for confirmado</li>
           </ul>
         </div>
         <Link href="/loja" className="btn-gold justify-center inline-flex">

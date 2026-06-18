@@ -86,7 +86,7 @@ function LojaContent() {
     ? subcategoriaLabel
     : categoriaAtiva
     ? categoriaAtiva.label
-    : 'Nossa Colecao'
+    : 'Nossa Coleção'
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -98,7 +98,7 @@ function LojaContent() {
           )}
           <h1 className="font-serif text-white text-4xl font-bold mb-3">{tituloPagina}</h1>
           <p className="text-gold-300 text-sm">
-            {total > 0 ? `${total} pecas disponíveis` : loading ? 'Carregando...' : 'Nenhuma peca encontrada'}
+            {total > 0 ? `${total} peças disponíveis` : loading ? 'Carregando...' : 'Nenhuma peça encontrada'}
           </p>
 
           {/* BREADCRUMB DE FILTROS ATIVOS */}
@@ -169,7 +169,7 @@ function LojaContent() {
             <input
               value={busca}
               onChange={e => setBusca(e.target.value)}
-              placeholder="Buscar pecas..."
+              placeholder="Buscar peças..."
               className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 bg-white text-sm outline-none focus:border-gold-400 focus:ring-2 focus:ring-gold-100"
             />
             {busca && (
@@ -186,8 +186,8 @@ function LojaContent() {
               className="appearance-none bg-white border border-gray-200 rounded-xl px-4 py-3 pr-10 text-sm outline-none focus:border-gold-400 cursor-pointer"
             >
               <option value="recentes">Mais Recentes</option>
-              <option value="menor">Menor Preco</option>
-              <option value="maior">Maior Preco</option>
+              <option value="menor">Menor Preço</option>
+              <option value="maior">Maior Preço</option>
             </select>
             <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
           </div>
@@ -205,14 +205,14 @@ function LojaContent() {
         {filtroAberto && (
           <div className="bg-white rounded-2xl border border-gray-100 p-6 mb-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-semibold text-gray-800">Filtrar por preco</h3>
+              <h3 className="font-semibold text-gray-800">Filtrar por preço</h3>
               <button onClick={() => setPrecoMax(5000)} className="text-xs text-gold-600 hover:underline">
                 Limpar filtros
               </button>
             </div>
             <div>
               <div className="flex justify-between text-sm text-gray-600 mb-2">
-                <span>Ate: <strong className="text-gold-600">{fmt(precoMax)}</strong></span>
+                <span>Até: <strong className="text-gold-600">{fmt(precoMax)}</strong></span>
               </div>
               <input
                 type="range" min={50} max={5000} step={50}
@@ -244,9 +244,9 @@ function LojaContent() {
         ) : ordenados.length === 0 ? (
           <div className="text-center py-20">
             <div className="text-5xl mb-4">🔍</div>
-            <h3 className="font-serif text-xl text-gray-700 mb-2">Nenhuma peca encontrada</h3>
+            <h3 className="font-serif text-xl text-gray-700 mb-2">Nenhuma peça encontrada</h3>
             <p className="text-gray-400 text-sm mb-6">Tente outro filtro ou busca</p>
-            <Link href="/loja" className="btn-gold text-sm">Ver todas as pecas</Link>
+            <Link href="/loja" className="btn-gold text-sm">Ver todas as peças</Link>
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
@@ -312,7 +312,7 @@ function LojaContent() {
               disabled={loading}
               className="btn-outline"
             >
-              {loading ? 'Carregando...' : 'Carregar mais pecas'}
+              {loading ? 'Carregando...' : 'Carregar mais peças'}
             </button>
           </div>
         )}

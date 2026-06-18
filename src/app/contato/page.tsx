@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Phone, Mail, Instagram, MessageCircle, Send, Loader2 } from 'lucide-react'
+import { Mail, Instagram, MessageCircle, Send, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 export default function ContatoPage() {
@@ -14,7 +14,6 @@ export default function ContatoPage() {
     e.preventDefault()
     if (!nome || !email || !mensagem) { toast.error('Preencha todos os campos'); return }
     setLoading(true)
-    // Simulacao - integrar com servico de email
     await new Promise(r => setTimeout(r, 1500))
     toast.success('Mensagem enviada! Retornaremos em breve.')
     setNome(''); setEmail(''); setAssunto(''); setMensagem('')
@@ -27,7 +26,7 @@ export default function ContatoPage() {
       <div className="bg-gradient-to-br from-luxo-900 to-luxo-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="font-serif text-white text-4xl font-bold mb-3">Fale Conosco</h1>
-          <p className="text-gold-300">Estamos aqui para ajudar voce</p>
+          <p className="text-gold-300">Estamos aqui para ajudar você</p>
         </div>
       </div>
 
@@ -99,14 +98,14 @@ export default function ContatoPage() {
           </div>
 
           <div className="bg-gradient-to-br from-gold-50 to-gold-100 rounded-2xl p-6">
-            <h3 className="font-semibold text-gray-800 mb-3">Horario de Atendimento</h3>
+            <h3 className="font-semibold text-gray-800 mb-3">Horário de Atendimento</h3>
             <div className="space-y-2 text-sm text-gray-600">
               <div className="flex justify-between">
                 <span>Segunda a Sexta</span>
                 <span className="font-medium">9h — 18h</span>
               </div>
               <div className="flex justify-between">
-                <span>Sabado</span>
+                <span>Sábado</span>
                 <span className="font-medium">9h — 13h</span>
               </div>
               <div className="flex justify-between text-gray-400">

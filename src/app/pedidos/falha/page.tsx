@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { XCircle, ArrowLeft } from 'lucide-react'
 
@@ -10,7 +11,7 @@ export default function PedidoFalhaPage() {
         </div>
         <h1 className="font-serif text-3xl font-bold text-luxo-900 mb-3">Pagamento Recusado</h1>
         <p className="text-gray-500 mb-8">
-          Nao foi possivel processar seu pagamento. Verifique os dados do cartao e tente novamente.
+          Não foi possível processar seu pagamento. Verifique os dados do cartão e tente novamente.
         </p>
         <div className="flex gap-3">
           <Link href="/checkout" className="flex-1 btn-gold justify-center">

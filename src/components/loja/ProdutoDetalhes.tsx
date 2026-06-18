@@ -102,7 +102,7 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
               <div className="flex gap-0.5">
                 {[...Array(5)].map((_,i) => <Star key={i} className="w-4 h-4 fill-gold-400 text-gold-400" />)}
               </div>
-              <span className="text-sm text-gray-500">5.0 (12 avaliacoes)</span>
+              <span className="text-sm text-gray-500">5.0 (12 avaliações)</span>
             </div>
 
             <div className="text-3xl font-bold text-gold-600 mb-6">{fmt(produto.preco_venda)}</div>
@@ -185,7 +185,7 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
             <div className="border-t border-gray-100 pt-6 grid grid-cols-3 gap-4">
               {[
                 { Icon: Shield, label: 'Autenticidade Garantida' },
-                { Icon: Truck, label: 'Frete Gratis acima R$299' },
+                { Icon: Truck, label: 'Frete Grátis acima R$299' },
                 { Icon: RefreshCw, label: 'Troca em 7 dias' },
               ].map(({ Icon, label }) => (
                 <div key={label} className="text-center">
@@ -202,7 +202,7 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
         {/* PRODUTOS RELACIONADOS */}
         {relacionados.length > 0 && (
           <section className="mt-16">
-            <h2 className="font-serif text-2xl font-bold text-luxo-900 mb-6">Voce tambem pode gostar</h2>
+            <h2 className="font-serif text-2xl font-bold text-luxo-900 mb-6">Você também pode gostar</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               {relacionados.map(p => {
                 const imgs2 = p.imagens_site as string[] | null

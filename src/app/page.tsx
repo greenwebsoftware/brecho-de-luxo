@@ -36,10 +36,10 @@ export default async function HomePage() {
   ])
 
   const diferenciais = [
-    { icon: Shield, titulo: 'Autenticidade Garantida', desc: 'Todas as pecas sao verificadas e certificadas' },
-    { icon: Truck, titulo: 'Entrega para Todo Brasil', desc: 'Frete gratis acima de R$299' },
+    { icon: Shield, titulo: 'Autenticidade Garantida', desc: 'Todas as peças são verificadas e certificadas' },
+    { icon: Truck, titulo: 'Entrega para Todo Brasil', desc: 'Frete grátis acima de R$299' },
     { icon: RefreshCw, titulo: 'Troca Facilitada', desc: '7 dias para troca sem burocracia' },
-    { icon: Star, titulo: 'Pecas Unicas', desc: 'Colecao exclusiva e curada com cuidado' },
+    { icon: Star, titulo: 'Peças Únicas', desc: 'Coleção exclusiva e curada com cuidado' },
   ]
 
   return (
@@ -54,32 +54,32 @@ export default async function HomePage() {
           <div>
             <div className="inline-flex items-center gap-2 bg-gold-500/20 border border-gold-500/30 rounded-full px-4 py-1.5 mb-6">
               <span className="w-2 h-2 rounded-full bg-gold-400 animate-pulse" />
-              <span className="text-gold-300 text-sm font-medium">Nova colecao disponivel</span>
+              <span className="text-gold-300 text-sm font-medium">Nova coleção disponível</span>
             </div>
             <h1 className="font-serif text-white text-5xl md:text-6xl font-bold leading-tight mb-6">
               Moda de Luxo<br />
-              <span className="text-gold-400">com Historia</span>
+              <span className="text-gold-400">com História</span>
             </h1>
             <p className="text-gray-300 text-lg leading-relaxed mb-8 max-w-md">
-              Pecas autenticas de marcas premium cuidadosamente selecionadas. Qualidade garantida, preco acessivel.
+              Peças autênticas de marcas premium cuidadosamente selecionadas. Qualidade garantida, preço acessível.
             </p>
             <div className="flex flex-wrap gap-4">
               <Link href="/loja" className="btn-gold text-base">
-                Ver Colecao <ArrowRight className="w-5 h-5" />
+                Ver Coleção <ArrowRight className="w-5 h-5" />
               </Link>
               <Link href="/sobre" className="btn-outline border-gold-400 text-gold-300 hover:bg-gold-500 hover:text-white text-base">
-                Nossa Historia
+                Nossa História
               </Link>
             </div>
             <div className="flex items-center gap-6 mt-10">
               <div className="text-center">
                 <div className="text-2xl font-bold text-gold-400">500+</div>
-                <div className="text-xs text-gray-400">Pecas disponíveis</div>
+                <div className="text-xs text-gray-400">Peças disponíveis</div>
               </div>
               <div className="w-px h-10 bg-white/20" />
               <div className="text-center">
                 <div className="text-2xl font-bold text-gold-400">4.9</div>
-                <div className="text-xs text-gray-400">Avaliacao media</div>
+                <div className="text-xs text-gray-400">Avaliação média</div>
               </div>
               <div className="w-px h-10 bg-white/20" />
               <div className="text-center">
@@ -101,7 +101,7 @@ export default async function HomePage() {
                 </div>
               </div>
               <div className="absolute -bottom-4 -right-8 bg-white rounded-2xl shadow-xl p-3">
-                <div className="text-xs font-bold text-gray-800">Frete Gratis</div>
+                <div className="text-xs font-bold text-gray-800">Frete Grátis</div>
                 <div className="text-[10px] text-gray-500">acima de R$299</div>
               </div>
             </div>
@@ -138,7 +138,7 @@ export default async function HomePage() {
           <div className="flex items-center justify-between mb-10">
             <div>
               <h2 className="font-serif text-3xl font-bold text-luxo-900">Chegadas Recentes</h2>
-              <p className="text-gray-500 mt-1">Pecas exclusivas para voce</p>
+              <p className="text-gray-500 mt-1">Peças exclusivas para você</p>
             </div>
             <Link href="/loja" className="btn-outline text-sm hidden md:flex">
               Ver tudo <ArrowRight className="w-4 h-4" />
@@ -191,10 +191,10 @@ export default async function HomePage() {
       {/* BANNER */}
       <section className="bg-gradient-to-r from-gold-500 to-gold-600 py-14">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="font-serif text-white text-3xl md:text-4xl font-bold mb-4">Pecas unicas que contam historias</h2>
-          <p className="text-gold-100 text-lg mb-8">Cada peca e selecionada com carinho para garantir qualidade e autenticidade.</p>
+          <h2 className="font-serif text-white text-3xl md:text-4xl font-bold mb-4">Peças únicas que contam histórias</h2>
+          <p className="text-gold-100 text-lg mb-8">Cada peça é selecionada com carinho para garantir qualidade e autenticidade.</p>
           <Link href="/sobre" className="bg-white text-gold-700 font-semibold px-8 py-3 rounded-full hover:bg-gold-50 transition-colors inline-flex items-center gap-2">
-            Conheca nossa historia <ArrowRight className="w-4 h-4" />
+            Conheça nossa história <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
@@ -225,9 +225,9 @@ export default async function HomePage() {
           </div>
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { nome: 'Ana C.', texto: 'Comprei uma bolsa incrivel! Autenticidade verificada e entrega rapida.', nota: 5 },
-              { nome: 'Patricia M.', texto: 'Atendimento excelente! Qualidade acima da esperada para o preco.', nota: 5 },
-              { nome: 'Fernanda S.', texto: 'Site facil de navegar e produto chegou exatamente como mostrado.', nota: 5 },
+              { nome: 'Ana C.', texto: 'Comprei uma bolsa incrível! Autenticidade verificada e entrega rápida.', nota: 5 },
+              { nome: 'Patrícia M.', texto: 'Atendimento excelente! Qualidade acima da esperada para o preço.', nota: 5 },
+              { nome: 'Fernanda S.', texto: 'Site fácil de navegar e produto chegou exatamente como mostrado.', nota: 5 },
             ].map((dep, i) => (
               <div key={i} className="bg-white/5 border border-white/10 rounded-2xl p-6">
                 <div className="flex gap-1 mb-3">

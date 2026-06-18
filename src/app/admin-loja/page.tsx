@@ -44,7 +44,7 @@ export default function AdminLojaPage() {
       body: JSON.stringify({ visivel_site: !atual }),
     })
     setProdutos(prev => prev.map(p => p.id === id ? { ...p, visivel_site: !atual } : p))
-    toast.success(!atual ? 'Produto visivel no site' : 'Produto ocultado do site')
+    toast.success(!atual ? 'Produto visível no site' : 'Produto ocultado do site')
   }
 
   const toggleDestaque = async (id: string, atual: boolean) => {
@@ -183,9 +183,9 @@ export default function AdminLojaPage() {
               <thead>
                 <tr className="border-b border-gray-100">
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Produto</th>
-                  <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Preco</th>
+                  <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Preço</th>
                   <th className="text-left px-4 py-3 text-xs text-gray-500 font-medium">Estoque</th>
-                  <th className="text-center px-4 py-3 text-xs text-gray-500 font-medium">Visivel</th>
+                  <th className="text-center px-4 py-3 text-xs text-gray-500 font-medium">Visível</th>
                   <th className="text-center px-4 py-3 text-xs text-gray-500 font-medium">Destaque</th>
                 </tr>
               </thead>

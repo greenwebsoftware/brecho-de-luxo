@@ -1,5 +1,5 @@
-// Estrutura de categorias e subcategorias do Brecho de Luxo
-// Usado no Header (mega menu) e na pagina /loja (filtros)
+// Estrutura de categorias e subcategorias do Brechó de Luxo
+// Usado no Header (mega menu) e na página /loja (filtros)
 
 export interface SubCategoria {
   label: string
@@ -32,11 +32,11 @@ export const CATEGORIAS: Categoria[] = [
         itens: [
           { label: 'Vestidos', slug: 'vestidos' },
           { label: 'Blusas', slug: 'blusas' },
-          { label: 'Calcas', slug: 'calcas-fem' },
+          { label: 'Calças', slug: 'calcas-fem' },
           { label: 'Saias', slug: 'saias' },
           { label: 'Shorts', slug: 'shorts-fem' },
           { label: 'Casacos', slug: 'casacos-fem' },
-          { label: 'Macacao', slug: 'macacao' },
+          { label: 'Macacão', slug: 'macacao' },
           { label: 'Lingerie', slug: 'lingerie' },
           { label: 'Conjuntos', slug: 'conjuntos' },
         ],
@@ -45,7 +45,7 @@ export const CATEGORIAS: Categoria[] = [
         label: 'Masculino',
         slug: 'masculino',
         itens: [
-          { label: 'Calcas', slug: 'calcas-masc' },
+          { label: 'Calças', slug: 'calcas-masc' },
           { label: 'Camisas', slug: 'camisas' },
           { label: 'Camisetas', slug: 'camisetas-masc' },
           { label: 'Short e Bermuda', slug: 'short-bermuda' },
@@ -56,7 +56,7 @@ export const CATEGORIAS: Categoria[] = [
         label: 'Infantil',
         slug: 'infantil',
         itens: [
-          { label: 'Calcas', slug: 'calcas-infantil' },
+          { label: 'Calças', slug: 'calcas-infantil' },
           { label: 'Camiseta', slug: 'camiseta-infantil' },
           { label: 'Casacos', slug: 'casacos-infantil' },
           { label: 'Pijamas', slug: 'pijamas-infantil' },
@@ -74,11 +74,11 @@ export const CATEGORIAS: Categoria[] = [
       { label: 'Chanel', slug: 'chanel' },
       { label: 'Gucci', slug: 'gucci' },
       { label: 'Prada', slug: 'prada' },
-      { label: 'Hermes', slug: 'hermes' },
+      { label: 'Hermès', slug: 'hermes' },
       { label: 'Dior', slug: 'dior' },
       { label: 'Santa Lolla', slug: 'santa-lolla' },
       { label: 'Schutz', slug: 'schutz' },
-      { label: 'Monica Sanches', slug: 'monica-sanches' },
+      { label: 'Mônica Sanches', slug: 'monica-sanches' },
       { label: 'Tommy Hilfiger', slug: 'tommy-hilfiger' },
       { label: 'Luz da Lua', slug: 'luz-da-lua' },
       { label: 'Guess', slug: 'guess' },
@@ -87,7 +87,7 @@ export const CATEGORIAS: Categoria[] = [
     ],
   },
   {
-    label: 'Calcados',
+    label: 'Calçados',
     slug: 'calcados',
     tipo: 'genero',
     grupos: [
@@ -96,14 +96,14 @@ export const CATEGORIAS: Categoria[] = [
         slug: 'feminino',
         itens: [
           { label: 'Scarpin', slug: 'scarpin' },
-          { label: 'Sandalia', slug: 'sandalia' },
+          { label: 'Sandália', slug: 'sandalia' },
           { label: 'Bota', slug: 'bota' },
           { label: 'Sapatilha', slug: 'sapatilha' },
           { label: 'Mule', slug: 'mule' },
           { label: 'Sneaker', slug: 'sneaker' },
           { label: 'Rasteirinha', slug: 'rasteirinha' },
           { label: 'Sapato Social', slug: 'sapato-social' },
-          { label: 'Tenis', slug: 'tenis-fem' },
+          { label: 'Tênis', slug: 'tenis-fem' },
         ],
       },
       {
@@ -111,7 +111,7 @@ export const CATEGORIAS: Categoria[] = [
         slug: 'masculino',
         itens: [
           { label: 'Sapatos', slug: 'sapatos-masc' },
-          { label: 'Tenis', slug: 'tenis-masc' },
+          { label: 'Tênis', slug: 'tenis-masc' },
           { label: 'Botas', slug: 'botas-masc' },
         ],
       },
@@ -119,26 +119,26 @@ export const CATEGORIAS: Categoria[] = [
         label: 'Infantil',
         slug: 'infantil',
         itens: [
-          { label: 'Tenis', slug: 'tenis-infantil' },
+          { label: 'Tênis', slug: 'tenis-infantil' },
           { label: 'Sapatos', slug: 'sapatos-infantil' },
-          { label: 'Sandalias', slug: 'sandalias-infantil' },
+          { label: 'Sandálias', slug: 'sandalias-infantil' },
           { label: 'Chinelos', slug: 'chinelos-infantil' },
         ],
       },
     ],
   },
   {
-    label: 'Acessorios',
+    label: 'Acessórios',
     slug: 'acessorios',
     tipo: 'subcategoria',
     itens: [
       { label: 'Cintos', slug: 'cintos' },
       { label: 'Carteiras', slug: 'carteiras' },
-      { label: 'Oculos', slug: 'oculos' },
+      { label: 'Óculos', slug: 'oculos' },
       { label: 'Bijuterias', slug: 'bijuterias' },
-      { label: 'Relogios', slug: 'relogios' },
-      { label: 'Lencos', slug: 'lencos' },
-      { label: 'Chapeus', slug: 'chapeus' },
+      { label: 'Relógios', slug: 'relogios' },
+      { label: 'Lenços', slug: 'lencos' },
+      { label: 'Chapéus', slug: 'chapeus' },
       { label: 'Perfumes', slug: 'perfumes' },
     ],
   },

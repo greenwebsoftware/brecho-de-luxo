@@ -36,7 +36,7 @@ export default function Header() {
     <>
       {/* TOP BAR */}
       <div className="bg-luxo-900 text-gold-300 text-xs text-center py-2 px-4">
-        Frete gratis nas compras acima de R$299 &bull; Parcele em ate 6x sem juros
+        Frete grátis nas compras acima de R$299 &bull; Parcele em até 6x sem juros
       </div>
 
       {/* HEADER PRINCIPAL */}
@@ -52,7 +52,7 @@ export default function Header() {
                 <span className="text-white font-bold text-lg font-serif">B</span>
               </div>
               <div>
-                <div className="font-serif font-bold text-luxo-900 text-lg leading-tight">Brecho de Luxo</div>
+                <div className="font-serif font-bold text-luxo-900 text-lg leading-tight">Brechó de Luxo</div>
                 <div className="text-gold-500 text-[10px] tracking-widest uppercase">Moda Premium</div>
               </div>
             </Link>
@@ -83,7 +83,7 @@ export default function Header() {
                     <div
                       onMouseEnter={() => abrirMega(cat.slug)}
                       onMouseLeave={fecharMegaComDelay}
-                      className="absolute top-full left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                      className="absolute top-full left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50"
                       style={{ minWidth: cat.tipo === 'genero' ? '560px' : '420px' }}
                     >
                       {/* SETA DO DROPDOWN */}

@@ -18,7 +18,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="font-serif text-white text-xl font-bold">Fique por dentro das novidades</h3>
-            <p className="text-gold-100 text-sm mt-1">Receba em primeira mao as novas chegadas e ofertas exclusivas</p>
+            <p className="text-gold-100 text-sm mt-1">Receba em primeira mão as novas chegadas e ofertas exclusivas</p>
           </div>
           <form onSubmit={handleNewsletter} className="flex gap-2 w-full md:w-auto">
             <input
@@ -42,10 +42,10 @@ export default function Footer() {
             <div className="w-8 h-8 rounded-full bg-gold-500 flex items-center justify-center">
               <span className="text-white font-bold font-serif">B</span>
             </div>
-            <span className="font-serif font-bold text-white text-lg">Brecho de Luxo</span>
+            <span className="font-serif font-bold text-white text-lg">Brechó de Luxo</span>
           </div>
           <p className="text-sm text-gray-400 leading-relaxed mb-4">
-            Pecas de moda de luxo cuidadosamente selecionadas com qualidade garantida.
+            Peças de moda de luxo cuidadosamente selecionadas com qualidade garantida.
           </p>
           <div className="flex gap-3">
             <a href="https://instagram.com" target="_blank" rel="noreferrer"
@@ -62,9 +62,9 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Loja</h4>
           <ul className="space-y-2 text-sm">
-            {[['Todas as Pecas', '/loja'], ['Bolsas', '/loja?cat=bolsas'],
-              ['Roupas', '/loja?cat=roupas'], ['Acessorios', '/loja?cat=acessorios'],
-              ['Lancamentos', '/loja?novidades=1'], ['Ofertas', '/loja?oferta=1']].map(([l, h]) => (
+            {[['Todas as Peças', '/loja'], ['Bolsas', '/loja?cat=bolsas'],
+              ['Roupas', '/loja?cat=roupas'], ['Acessórios', '/loja?cat=acessorios'],
+              ['Lançamentos', '/loja?novidades=1'], ['Ofertas', '/loja?oferta=1']].map(([l, h]) => (
               <li key={h}>
                 <Link href={h} className="text-gray-400 hover:text-gold-400 transition-colors">{l}</Link>
               </li>
@@ -75,7 +75,7 @@ export default function Footer() {
         <div>
           <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wide">Ajuda</h4>
           <ul className="space-y-2 text-sm">
-            {[['Sobre Nos', '/sobre'], ['Contato', '/contato'],
+            {[['Sobre Nós', '/sobre'], ['Contato', '/contato'],
               ['Trocas', '/trocas'], ['Minha Conta', '/conta'],
               ['Meus Pedidos', '/pedidos']].map(([l, h]) => (
               <li key={h}>
@@ -100,7 +100,7 @@ export default function Footer() {
             </li>
             <li className="flex items-start gap-2 text-gray-400">
               <MapPin className="w-4 h-4 text-gold-400 flex-shrink-0 mt-0.5" />
-              <span>Sao Paulo, SP</span>
+              <span>São Paulo, SP</span>
             </li>
           </ul>
         </div>
@@ -108,7 +108,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-500">
-          <span>© 2026 Brecho de Luxo. Todos os direitos reservados.</span>
+          <span>© 2026 Brechó de Luxo. Todos os direitos reservados.</span>
           <span>Desenvolvido por <a href="#" className="text-gold-400">GreenWeb Softwares</a></span>
         </div>
       </div>

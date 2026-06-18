@@ -42,7 +42,7 @@ export default function CheckoutPage() {
 
   const irParaPagamento = async () => {
     if (!nome || !email || !cep || !logradouro || !numero) {
-      toast.error('Preencha todos os campos obrigatorios')
+      toast.error('Preencha todos os campos obrigatórios')
       return
     }
     setLoading(true)
@@ -67,7 +67,6 @@ export default function CheckoutPage() {
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
 
-      // Redireciona para o Mercado Pago
       limparCarrinho()
       window.location.href = data.mp_init_point
     } catch (err: unknown) {
@@ -81,9 +80,9 @@ export default function CheckoutPage() {
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center py-20">
           <ShoppingBag className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <h2 className="font-serif text-2xl text-gray-700 mb-2">Seu carrinho esta vazio</h2>
-          <p className="text-gray-400 mb-6">Adicione algumas pecas incriveis!</p>
-          <Link href="/loja" className="btn-gold">Ver a Colecao</Link>
+          <h2 className="font-serif text-2xl text-gray-700 mb-2">Seu carrinho está vazio</h2>
+          <p className="text-gray-400 mb-6">Adicione algumas peças incríveis!</p>
+          <Link href="/loja" className="btn-gold">Ver a Coleção</Link>
         </div>
       </div>
     )
@@ -172,7 +171,7 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                <h3 className="font-semibold text-gray-800 pt-4">Endereco de entrega</h3>
+                <h3 className="font-semibold text-gray-800 pt-4">Endereço de entrega</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-xs font-medium text-gray-500 mb-1 block">CEP *</label>
@@ -184,7 +183,7 @@ export default function CheckoutPage() {
                     <input value={logradouro} onChange={e => setLogradouro(e.target.value)} className="input-luxo" placeholder="Rua, Av..." />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Numero *</label>
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Número *</label>
                     <input value={numero} onChange={e => setNumero(e.target.value)} className="input-luxo" placeholder="123" />
                   </div>
                   <div>
@@ -220,12 +219,12 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-gray-600">
                   <span>Frete</span>
                   <span className={frete === 0 ? 'text-green-600 font-medium' : ''}>
-                    {frete === 0 ? 'Gratis' : fmt(frete)}
+                    {frete === 0 ? 'Grátis' : fmt(frete)}
                   </span>
                 </div>
                 {frete === 0 && (
                   <p className="text-xs text-green-600 bg-green-50 rounded-lg px-3 py-2">
-                    ✓ Frete gratis por compra acima de R$299!
+                    ✓ Frete grátis por compra acima de R$299!
                   </p>
                 )}
                 <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-lg">

@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { CheckCircle, Package, ArrowRight } from 'lucide-react'
 
@@ -10,21 +11,21 @@ export default function PedidoSucessoPage({ searchParams }: { searchParams: { pe
         </div>
         <h1 className="font-serif text-3xl font-bold text-luxo-900 mb-3">Pedido Confirmado!</h1>
         <p className="text-gray-500 mb-2">
-          Seu pagamento foi aprovado e seu pedido esta sendo preparado.
+          Seu pagamento foi aprovado e seu pedido está sendo preparado.
         </p>
         {searchParams.pedido && (
           <p className="text-sm text-gray-400 mb-8">
-            Numero do pedido: <strong className="text-gold-600">#{searchParams.pedido.slice(-8).toUpperCase()}</strong>
+            Número do pedido: <strong className="text-gold-600">#{searchParams.pedido.slice(-8).toUpperCase()}</strong>
           </p>
         )}
         <div className="bg-white rounded-2xl p-6 mb-8 shadow-sm text-left space-y-3">
           <div className="flex items-center gap-3 text-sm text-gray-600">
             <Package className="w-5 h-5 text-gold-500 flex-shrink-0" />
-            <span>Voce recebera um e-mail com os detalhes do pedido</span>
+            <span>Você receberá um e-mail com os detalhes do pedido</span>
           </div>
           <div className="flex items-center gap-3 text-sm text-gray-600">
             <CheckCircle className="w-5 h-5 text-gold-500 flex-shrink-0" />
-            <span>Prazo de entrega: 5 a 10 dias uteis</span>
+            <span>Prazo de entrega: 5 a 10 dias úteis</span>
           </div>
         </div>
         <div className="flex gap-3">
