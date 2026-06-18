@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   const supabase = createServerClient()
-
   try {
     const body = await req.json()
     const { itens, cliente, endereco, frete = 0, desconto = 0 } = body
@@ -14,17 +15,13 @@ export async function POST(req: NextRequest) {
     const subtotal = itens.reduce((s: number, i: { preco: number; quantidade: number }) => s + i.preco * i.quantidade, 0)
     const total = subtotal + frete - desconto
 
-    // Cria pedido no banco
     const { data: pedido, error: pedidoErr } = await supabase
       .from('pedidos_online')
       .insert({
         cliente_nome: cliente.nome,
         cliente_email: cliente.email,
         cliente_telefone: cliente.telefone || null,
-        subtotal,
-        desconto,
-        frete,
-        total,
+        subtotal, desconto, frete, total,
         forma_pagamento: 'mercadopago',
         gateway: 'mercadopago',
         status: 'aguardando_pagamento',
@@ -36,7 +33,6 @@ export async function POST(req: NextRequest) {
     if (pedidoErr || !pedido)
       return NextResponse.json({ error: 'Erro ao criar pedido' }, { status: 400 })
 
-    // Cria itens do pedido
     await supabase.from('itens_pedido_online').insert(
       itens.map((i: { produto_id: string; nome: string; codigo?: string; tamanho?: string; cor?: string; preco: number; quantidade: number }) => ({
         pedido_id: pedido.id,
@@ -51,7 +47,6 @@ export async function POST(req: NextRequest) {
       }))
     )
 
-    // Cria preferencia no Mercado Pago via fetch
     const mpBody = {
       external_reference: pedido.id,
       items: itens.map((i: { nome: string; preco: number; quantidade: number }) => ({
@@ -82,9 +77,8 @@ export async function POST(req: NextRequest) {
     })
 
     const pref = await mpRes.json()
-
     if (!mpRes.ok)
-      return NextResponse.json({ error: 'Erro ao criar preferencia MP: ' + JSON.stringify(pref) }, { status: 400 })
+      return NextResponse.json({ error: 'Erro MP: ' + JSON.stringify(pref) }, { status: 400 })
 
     await supabase.from('pedidos_online').update({ gateway_id: pref.id }).eq('id', pedido.id)
 
@@ -93,11 +87,8 @@ export async function POST(req: NextRequest) {
       pedido_numero: pedido.numero,
       mp_preference_id: pref.id,
       mp_init_point: pref.init_point,
-      mp_sandbox_init_point: pref.sandbox_init_point,
     })
-
   } catch (err: unknown) {
-    console.error('Erro pagamento:', err)
-    return NextResponse.json({ error: 'Erro ao processar pagamento' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
