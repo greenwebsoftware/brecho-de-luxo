@@ -1,0 +1,10 @@
+import os, base64, gzip
+base = os.path.dirname(os.path.abspath(__file__))
+DATA = 'H4sIAFJvNGoC/8VXzW7jNhC++ynmpgSI4bvRH8TuNgmQYBd2mkuQA03RMlOKFPgT7HqTR+ihvexlgfbY5+oT9BFKiZI9kig72wLdGIE0n+YbDofD4XAygTfGamedJpAyoMSyTGlODDAwboXkVMFMM7pRpd61e69Gkwn8ZIjHpYJLRlKm4SRnGYGcSXfqDUgCBcm4f0yEeiRwsubCamVORyP2vlDaApeW6TWhDJZuNW8Gg48jAEFWTEzBe8dl5mUjXLYTXyIWLrQr1AWTTKvjBgC4ZdJMW+PeP0QNf4FfAJYXagoJjl0Cz5DkRNPwllUuJo0L3/d8AMjKqZRf0JxazlEljYX5+e2bi7eLq/PlFJAB+BbuvZHS2Z27yUK5gpjkrAKDz4nGWO147V3Agh/Tylz597F+7s3+yHIuuWwIyPi6/6UO+f0O8BZ3lu6YsTxV3p3GwlODwMtZlDITzhBEWAV5SH1OBMXqtJLH3tFBypJwzDCVOKi88UuDtSv5oP05MYSqlk8VcJB0Q6j/qT0pr4EhwrVPTaY52zNEgww6puSjk7bl2g7CpIfmdYf1k+SGGOpENEvyyKeDaTKwiKWdA1HOuWmTAnCQwGyPUkKHh6pywJe+GdO5S0knGcarGv7ifOgN+pq4X8k1kZaLfth5/8u/ifrOzLFA9uP4Gu5ALI4y3/FHkmN3iwAcZ94RX0FTTH2qkTi3uwqVXL23q+9MCdOtviuM1dU3nBIB6iwI2s7KcQN3jlurJNrTJTx+qmGUF/uIbohkAgU0yDHVC0cp32tmlRhTfKcJTvOiEmOKlz71GQrsJsgx1R+40nvFtJRiaku/HgSulRB4n5XgWFRglEQ3zm6RfpBjqjdKckrAD0M32PO8wsemxmPUW5XnH+CSizX3dXZPtSU+3jR4jHrttpD6aTk0KeG249TPypGBxWLG4MUqxZjiuWbbLTo4SJBjqjOnfbHSH9Dp2iDHkr0qFtVJjtOdttGv3W4sKdEFlzgRAjDcCsiUCN5OtYAM9icKV75VKQ1bL4gvLpuW+QYabAScQGd6XkqD9iUjP+NMNDUwRFgQYxn3TS12SSPw4EwULBXlRHRmo8YmwEPkWyY5ymRbir1e6P9uOcKMTHcuRzqB6FQOMsp0Me18+eoHf3QWR4/RwYi9ghn2lOlvs9e0GxvuD7RWz1Aj/+34Pqe+ovrLVbemkS4eu/0dOc3nvNNm806PjTsiXW6/diPWQDHCW5/o2LYKcrTe80fnL7ytyK/2WIyy8IHNOLavGyR6sDHZaudEkAcalYK51jIGINqB+Gu6a7UWRYN01/Vhd4FeO0ktVxIyZndX5yt/xTnB9/nT5qXKh3Dp5uVjCgtGlU6/CZ/ParXv/NU7ZE64Wntf/v7910/es9DsBfmzl5vTMCB/eGSfSxX22y9V4rz4f82s0zIMfF+69wDPz5D89fnPZPQy+gfEvh2UwxEAAA=='
+dest = os.path.join(base, "src", "lib", "menuConfig.ts")
+os.makedirs(os.path.dirname(dest), exist_ok=True)
+with open(dest, "w", encoding="utf-8", newline="\n") as f:
+    f.write(gzip.decompress(base64.b64decode(DATA)).decode("utf-8"))
+print("menuConfig.ts atualizado - Roupas agora dividido por genero!")
+print()
+print("Agora rode: npm run build")
