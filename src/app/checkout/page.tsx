@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useCarrinho } from '../../lib/carrinhoContext'
 import { Trash2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
 import Link from 'next/link'
@@ -9,6 +9,9 @@ export default function CheckoutPage() {
   const { itens, totalValor, removerItem, atualizarQtd, limparCarrinho } = useCarrinho()
   const [etapa, setEtapa] = useState<'carrinho' | 'dados' | 'pagamento'>('carrinho')
   const [loading, setLoading] = useState(false)
+
+  const [freteGratisAcima, setFreteGratisAcima] = useState(299)
+  const [freteFixo, setFreteFixo] = useState(19.90)
 
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -21,7 +24,17 @@ export default function CheckoutPage() {
   const [cidade, setCidade] = useState('')
   const [uf, setUf] = useState('')
 
-  const frete = totalValor >= 299 ? 0 : 19.90
+  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data?.frete_gratis_acima) setFreteGratisAcima(Number(data.data.frete_gratis_acima))
+        if (data.data?.frete_fixo) setFreteFixo(Number(data.data.frete_fixo))
+      })
+      .catch(() => {})
+  }, [])
+
+  const frete = totalValor >= freteGratisAcima ? 0 : freteFixo
   const total = totalValor + frete
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
@@ -222,9 +235,13 @@ export default function CheckoutPage() {
                     {frete === 0 ? 'Grátis' : fmt(frete)}
                   </span>
                 </div>
-                {frete === 0 && (
+                {frete === 0 ? (
                   <p className="text-xs text-green-600 bg-green-50 rounded-lg px-3 py-2">
-                    ✓ Frete grátis por compra acima de R$299!
+                    ✓ Frete grátis por compra acima de {fmt(freteGratisAcima)}!
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
+                    Faltam {fmt(freteGratisAcima - totalValor)} para frete grátis
                   </p>
                 )}
                 <div className="border-t border-gray-100 pt-3 flex justify-between font-bold text-lg">

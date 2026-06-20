@@ -5,7 +5,6 @@ import Footer from '../components/layout/Footer'
 import WhatsAppFloat from '../components/layout/WhatsAppFloat'
 import { Toaster } from 'react-hot-toast'
 import { CarrinhoProvider } from '../lib/carrinhoContext'
-import { createServerClient } from '../lib/supabase-server'
 
 export const metadata: Metadata = {
   title: 'Brechó de Luxo — Moda Premium com História',
@@ -21,19 +20,7 @@ export const metadata: Metadata = {
   },
 }
 
-async function getSiteConfig() {
-  try {
-    const supabase = createServerClient()
-    const { data } = await supabase.from('site_config').select('*').eq('id', 1).single()
-    return data || {}
-  } catch {
-    return {}
-  }
-}
-
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const config = await getSiteConfig()
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pt-BR">
       <head>
@@ -44,14 +31,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <CarrinhoProvider>
           <Header />
           <main>{children}</main>
-          <Footer
-            whatsapp={config.whatsapp}
-            instagram={config.instagram}
-            facebook={config.facebook}
-            tiktok={config.tiktok}
-            emailContato={config.email_contato}
-          />
-          <WhatsAppFloat whatsapp={config.whatsapp} />
+          <Footer />
+          <WhatsAppFloat />
           <Toaster position="top-right" toastOptions={{
             style: { background: '#1a0533', color: 'white', borderRadius: '12px' }
           }} />

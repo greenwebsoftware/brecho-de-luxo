@@ -1,7 +1,18 @@
 'use client'
+import { useState, useEffect } from 'react'
 
-export default function WhatsAppFloat({ whatsapp }: { whatsapp?: string }) {
-  const numero = whatsapp || '5511900000000'
+export default function WhatsAppFloat() {
+  const [numero, setNumero] = useState('5511900000000')
+
+  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.data?.whatsapp) setNumero(data.data.whatsapp)
+      })
+      .catch(() => {})
+  }, [])
+
   const link = `https://wa.me/${numero}?text=Ola!%20Vim%20pelo%20site%20do%20Brecho%20de%20Luxo`
 
   return (

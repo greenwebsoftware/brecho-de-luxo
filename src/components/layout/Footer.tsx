@@ -1,18 +1,26 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react'
 
-interface FooterProps {
+interface SiteConfig {
   whatsapp?: string
   instagram?: string
   facebook?: string
   tiktok?: string
-  emailContato?: string
+  email_contato?: string
 }
 
-export default function Footer({ whatsapp, instagram, facebook, emailContato }: FooterProps) {
+export default function Footer() {
   const [email, setEmail] = useState('')
+  const [config, setConfig] = useState<SiteConfig>({})
+
+  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => setConfig(data.data || {}))
+      .catch(() => {})
+  }, [])
 
   const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,11 +28,11 @@ export default function Footer({ whatsapp, instagram, facebook, emailContato }: 
     alert('Inscrito com sucesso!')
   }
 
-  const waNumero = whatsapp || '5511900000000'
+  const waNumero = config.whatsapp || '5511900000000'
   const waLink = `https://wa.me/${waNumero}`
-  const igLink = `https://instagram.com/${instagram || 'brechodeluxo'}`
-  const fbLink = `https://facebook.com/${facebook || 'brechodeluxo'}`
-  const emailFinal = emailContato || 'contato@brechodeluxo.com.br'
+  const igLink = `https://instagram.com/${config.instagram || 'brechodeluxo'}`
+  const fbLink = `https://facebook.com/${config.facebook || 'brechodeluxo'}`
+  const emailFinal = config.email_contato || 'contato@brechodeluxo.com.br'
   const telExibido = waNumero.length >= 12
     ? `(${waNumero.slice(2,4)}) 9-${waNumero.slice(5,9)}-${waNumero.slice(9)}`
     : '(11) 9-0000-0000'
