@@ -26,8 +26,8 @@ export default function ContatoPage() {
 
   const waNumero = config.whatsapp || '5511900000000'
   const waLink = `https://wa.me/${waNumero}`
-  const igUser = config.instagram?.replace('@', '') || 'brechodeluxo'
-  const igLink = `https://instagram.com/${igUser}`
+  const igUser = (config.instagram || 'brechodeluxo').startsWith('http') ? (config.instagram || '').replace(/.*instagram\.com\//, '').replace(/\//g, '') : (config.instagram || 'brechodeluxo').replace('@', '')
+  const igLink = (config.instagram || '').startsWith('http') ? (config.instagram || '') : `https://instagram.com/${(config.instagram || 'brechodeluxo').replace('@', '')}`
   const emailFinal = config.email_contato || 'contato@brechodeluxo.com.br'
   const telExibido = waNumero.length >= 12
     ? `(${waNumero.slice(2, 4)}) 9-${waNumero.slice(5, 9)}-${waNumero.slice(9)}`
