@@ -1,9 +1,18 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useCarrinho } from '../../lib/carrinhoContext'
-import { Trash2, ShoppingBag, ArrowRight, Loader2 } from 'lucide-react'
+import { Trash2, ShoppingBag, ArrowRight, Loader2, MapPin, Package } from 'lucide-react'
 import Link from 'next/link'
 import toast from 'react-hot-toast'
+
+interface OpcaoFrete {
+  id: number
+  nome: string
+  transportadora: string
+  logo?: string
+  preco: number
+  prazo: number
+}
 
 export default function CheckoutPage() {
   const { itens, totalValor, removerItem, atualizarQtd, limparCarrinho } = useCarrinho()
@@ -11,7 +20,10 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false)
 
   const [freteGratisAcima, setFreteGratisAcima] = useState(299)
-  const [freteFixo, setFreteFixo] = useState(19.90)
+  const [opcoesFrete, setOpcoesFrete] = useState<OpcaoFrete[]>([])
+  const [freteSelecionado, setFreteSelecionado] = useState<OpcaoFrete | null>(null)
+  const [calculandoFrete, setCalculandoFrete] = useState(false)
+  const [freteCalculado, setFreteCalculado] = useState(false)
 
   const [nome, setNome] = useState('')
   const [email, setEmail] = useState('')
@@ -29,13 +41,14 @@ export default function CheckoutPage() {
       .then(res => res.json())
       .then(data => {
         if (data.data?.frete_gratis_acima) setFreteGratisAcima(Number(data.data.frete_gratis_acima))
-        if (data.data?.frete_fixo) setFreteFixo(Number(data.data.frete_fixo))
       })
       .catch(() => {})
   }, [])
 
-  const frete = totalValor >= freteGratisAcima ? 0 : freteFixo
-  const total = totalValor + frete
+  const freteValor = freteSelecionado?.preco || 0
+  const freteGratis = totalValor >= freteGratisAcima
+  const freteTotal = freteGratis ? 0 : freteValor
+  const total = totalValor + freteTotal
   const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
   const buscarCep = async (cepVal: string) => {
@@ -49,13 +62,51 @@ export default function CheckoutPage() {
         setBairro(data.bairro)
         setCidade(data.localidade)
         setUf(data.uf)
+        // Calcula frete automaticamente quando CEP é preenchido
+        calcularFrete(clean)
       }
     } catch {}
+  }
+
+  const calcularFrete = async (cepDest: string) => {
+    if (cepDest.length !== 8 || itens.length === 0) return
+    setCalculandoFrete(true)
+    setFreteCalculado(false)
+    setFreteSelecionado(null)
+    try {
+      const res = await fetch('/api/frete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          cep_destino: cepDest,
+          produtos: itens.map(i => ({
+            peso: 0.3,
+            quantidade: i.quantidade,
+            preco: i.preco,
+          })),
+        }),
+      })
+      const data = await res.json()
+      if (data.opcoes?.length > 0) {
+        setOpcoesFrete(data.opcoes)
+        setFreteSelecionado(data.opcoes[0]) // seleciona mais barato por padrão
+        setFreteCalculado(true)
+      } else {
+        toast.error('Não foi possível calcular o frete para este CEP')
+      }
+    } catch {
+      toast.error('Erro ao calcular frete')
+    }
+    setCalculandoFrete(false)
   }
 
   const irParaPagamento = async () => {
     if (!nome || !email || !cep || !logradouro || !numero) {
       toast.error('Preencha todos os campos obrigatórios')
+      return
+    }
+    if (!freteGratis && !freteSelecionado) {
+      toast.error('Selecione uma opção de frete')
       return
     }
     setLoading(true)
@@ -74,12 +125,12 @@ export default function CheckoutPage() {
           })),
           cliente: { nome, email, telefone },
           endereco: { cep, logradouro, numero, complemento, bairro, cidade, uf },
-          frete,
+          frete: freteTotal,
+          frete_servico: freteSelecionado?.nome,
         }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
-
       limparCarrinho()
       window.location.href = data.mp_init_point
     } catch (err: unknown) {
@@ -112,11 +163,20 @@ export default function CheckoutPage() {
         <div className="flex items-center gap-2 mb-8">
           {['carrinho', 'dados', 'pagamento'].map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              {i > 0 && <div className={`h-px flex-1 w-12 ${['dados','pagamento'].includes(etapa) && i === 1 ? 'bg-gold-500' : etapa === 'pagamento' && i === 2 ? 'bg-gold-500' : 'bg-gray-200'}`} />}
-              <div className={`flex items-center gap-2 text-sm font-medium ${etapa === s ? 'text-gold-600' : ['dados','pagamento'].indexOf(s) < ['carrinho','dados','pagamento'].indexOf(etapa) ? 'text-green-600' : 'text-gray-400'}`}>
-                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${etapa === s ? 'bg-gold-500 text-white' : ['carrinho','dados','pagamento'].indexOf(s) < ['carrinho','dados','pagamento'].indexOf(etapa) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'}`}>
-                  {i + 1}
-                </div>
+              {i > 0 && <div className={`h-px flex-1 w-12 ${
+                etapa === 'pagamento' ? 'bg-gold-500' :
+                etapa === 'dados' && i === 1 ? 'bg-gold-500' : 'bg-gray-200'
+              }`} />}
+              <div className={`flex items-center gap-2 text-sm font-medium ${
+                etapa === s ? 'text-gold-600' :
+                ['carrinho','dados','pagamento'].indexOf(s) < ['carrinho','dados','pagamento'].indexOf(etapa)
+                  ? 'text-green-600' : 'text-gray-400'
+              }`}>
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  etapa === s ? 'bg-gold-500 text-white' :
+                  ['carrinho','dados','pagamento'].indexOf(s) < ['carrinho','dados','pagamento'].indexOf(etapa)
+                    ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
+                }`}>{i + 1}</div>
                 <span className="capitalize hidden sm:block">{s}</span>
               </div>
             </div>
@@ -124,7 +184,6 @@ export default function CheckoutPage() {
         </div>
 
         <div className="grid lg:grid-cols-3 gap-6">
-          {/* CONTEUDO PRINCIPAL */}
           <div className="lg:col-span-2">
 
             {/* ETAPA CARRINHO */}
@@ -167,60 +226,115 @@ export default function CheckoutPage() {
 
             {/* ETAPA DADOS */}
             {etapa === 'dados' && (
-              <div className="bg-white rounded-2xl shadow-sm p-6 space-y-4">
-                <h3 className="font-semibold text-gray-800 mb-4">Seus dados</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Nome completo *</label>
-                    <input value={nome} onChange={e => setNome(e.target.value)} className="input-luxo" placeholder="Seu nome" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">E-mail *</label>
-                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input-luxo" placeholder="seu@email.com" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Telefone</label>
-                    <input value={telefone} onChange={e => setTelefone(e.target.value)} className="input-luxo" placeholder="(11) 9-0000-0000" />
+              <div className="space-y-4">
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <h3 className="font-semibold text-gray-800 mb-4">Seus dados</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Nome completo *</label>
+                      <input value={nome} onChange={e => setNome(e.target.value)} className="input-luxo" placeholder="Seu nome" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">E-mail *</label>
+                      <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="input-luxo" placeholder="seu@email.com" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Telefone</label>
+                      <input value={telefone} onChange={e => setTelefone(e.target.value)} className="input-luxo" placeholder="(11) 9-0000-0000" />
+                    </div>
                   </div>
                 </div>
 
-                <h3 className="font-semibold text-gray-800 pt-4">Endereço de entrega</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">CEP *</label>
-                    <input value={cep} onChange={e => { setCep(e.target.value); buscarCep(e.target.value) }}
-                      className="input-luxo" placeholder="00000-000" maxLength={9} />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Logradouro *</label>
-                    <input value={logradouro} onChange={e => setLogradouro(e.target.value)} className="input-luxo" placeholder="Rua, Av..." />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Número *</label>
-                    <input value={numero} onChange={e => setNumero(e.target.value)} className="input-luxo" placeholder="123" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Complemento</label>
-                    <input value={complemento} onChange={e => setComplemento(e.target.value)} className="input-luxo" placeholder="Apto, bloco..." />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Bairro</label>
-                    <input value={bairro} onChange={e => setBairro(e.target.value)} className="input-luxo" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">Cidade</label>
-                    <input value={cidade} onChange={e => setCidade(e.target.value)} className="input-luxo" />
-                  </div>
-                  <div>
-                    <label className="text-xs font-medium text-gray-500 mb-1 block">UF</label>
-                    <input value={uf} onChange={e => setUf(e.target.value.toUpperCase())} className="input-luxo" maxLength={2} />
+                <div className="bg-white rounded-2xl shadow-sm p-6">
+                  <h3 className="font-semibold text-gray-800 mb-4">Endereço de entrega</h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">CEP *</label>
+                      <div className="relative">
+                        <input value={cep}
+                          onChange={e => { setCep(e.target.value); buscarCep(e.target.value) }}
+                          className="input-luxo pr-10" placeholder="00000-000" maxLength={9} />
+                        {calculandoFrete && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-gold-500" />
+                        )}
+                      </div>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Logradouro *</label>
+                      <input value={logradouro} onChange={e => setLogradouro(e.target.value)} className="input-luxo" placeholder="Rua, Av..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Número *</label>
+                      <input value={numero} onChange={e => setNumero(e.target.value)} className="input-luxo" placeholder="123" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Complemento</label>
+                      <input value={complemento} onChange={e => setComplemento(e.target.value)} className="input-luxo" placeholder="Apto, bloco..." />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Bairro</label>
+                      <input value={bairro} onChange={e => setBairro(e.target.value)} className="input-luxo" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Cidade</label>
+                      <input value={cidade} onChange={e => setCidade(e.target.value)} className="input-luxo" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">UF</label>
+                      <input value={uf} onChange={e => setUf(e.target.value.toUpperCase())} className="input-luxo" maxLength={2} />
+                    </div>
                   </div>
                 </div>
+
+                {/* OPCOES DE FRETE */}
+                {freteGratis ? (
+                  <div className="bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+                    <Package className="w-5 h-5 text-green-600 flex-shrink-0" />
+                    <div>
+                      <p className="text-green-700 font-semibold text-sm">Frete Grátis!</p>
+                      <p className="text-green-600 text-xs">Sua compra é acima de {fmt(freteGratisAcima)}</p>
+                    </div>
+                  </div>
+                ) : freteCalculado && opcoesFrete.length > 0 ? (
+                  <div className="bg-white rounded-2xl shadow-sm p-6">
+                    <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                      <MapPin className="w-4 h-4 text-gold-500" />
+                      Opções de Entrega
+                    </h3>
+                    <div className="space-y-3">
+                      {opcoesFrete.map(op => (
+                        <label key={op.id}
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                            freteSelecionado?.id === op.id
+                              ? 'border-gold-500 bg-gold-50'
+                              : 'border-gray-100 hover:border-gold-200'
+                          }`}>
+                          <div className="flex items-center gap-3">
+                            <input type="radio" name="frete" checked={freteSelecionado?.id === op.id}
+                              onChange={() => setFreteSelecionado(op)}
+                              className="accent-gold-500" />
+                            <div>
+                              <p className="font-medium text-gray-800 text-sm">{op.nome}</p>
+                              <p className="text-xs text-gray-500">{op.transportadora} · {op.prazo} dias úteis</p>
+                            </div>
+                          </div>
+                          <span className="font-bold text-gold-600">{fmt(op.preco)}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ) : cep.replace(/\D/g, '').length === 8 && !calculandoFrete ? (
+                  <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 text-sm text-amber-700">
+                    Não foi possível calcular o frete para este CEP.
+                    <button onClick={() => calcularFrete(cep.replace(/\D/g, ''))}
+                      className="ml-2 underline font-medium">Tentar novamente</button>
+                  </div>
+                ) : null}
               </div>
             )}
           </div>
 
-          {/* RESUMO PEDIDO */}
+          {/* RESUMO */}
           <div>
             <div className="bg-white rounded-2xl shadow-sm p-5 sticky top-24">
               <h3 className="font-semibold text-gray-800 mb-4">Resumo</h3>
@@ -231,15 +345,14 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-gray-600">
                   <span>Frete</span>
-                  <span className={frete === 0 ? 'text-green-600 font-medium' : ''}>
-                    {frete === 0 ? 'Grátis' : fmt(frete)}
+                  <span className={freteGratis ? 'text-green-600 font-medium' : ''}>
+                    {freteGratis ? 'Grátis' : freteSelecionado ? fmt(freteValor) : '—'}
                   </span>
                 </div>
-                {frete === 0 ? (
-                  <p className="text-xs text-green-600 bg-green-50 rounded-lg px-3 py-2">
-                    ✓ Frete grátis por compra acima de {fmt(freteGratisAcima)}!
-                  </p>
-                ) : (
+                {freteSelecionado && !freteGratis && (
+                  <p className="text-xs text-gray-400">{freteSelecionado.nome} · {freteSelecionado.prazo} dias úteis</p>
+                )}
+                {!freteGratis && (
                   <p className="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
                     Faltam {fmt(freteGratisAcima - totalValor)} para frete grátis
                   </p>
@@ -258,7 +371,7 @@ export default function CheckoutPage() {
                 )}
                 {etapa === 'dados' && (
                   <>
-                    <button onClick={irParaPagamento} disabled={loading}
+                    <button onClick={irParaPagamento} disabled={loading || (!freteGratis && !freteSelecionado)}
                       className="btn-gold w-full justify-center disabled:opacity-50">
                       {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
                       {loading ? 'Aguarde...' : 'Ir para Pagamento'}
