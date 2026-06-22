@@ -29,15 +29,33 @@ async function getCategorias() {
   } catch { return [] }
 }
 
+async function getSiteConfig() {
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('site_config')
+      .select('frete_gratis_acima, frete_fixo')
+      .eq('id', 1)
+      .single()
+    return data || { frete_gratis_acima: 299, frete_fixo: 19.90 }
+  } catch { return { frete_gratis_acima: 299, frete_fixo: 19.90 } }
+}
+
+export const revalidate = 60 // revalida a cada 60 segundos
+
 export default async function HomePage() {
-  const [produtos, categorias] = await Promise.all([
+  const [produtos, categorias, siteConfig] = await Promise.all([
     getProdutosDestaque(),
     getCategorias(),
+    getSiteConfig(),
   ])
+
+  const freteGratis = siteConfig.frete_gratis_acima || 299
+  const fmt = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v)
 
   const diferenciais = [
     { icon: Shield, titulo: 'Autenticidade Garantida', desc: 'Todas as peças são verificadas e certificadas' },
-    { icon: Truck, titulo: 'Entrega para Todo Brasil', desc: 'Frete grátis acima de R$299' },
+    { icon: Truck, titulo: 'Entrega para Todo Brasil', desc: `Frete grátis acima de ${fmt(freteGratis)}` },
     { icon: RefreshCw, titulo: 'Troca Facilitada', desc: '7 dias para troca sem burocracia' },
     { icon: Star, titulo: 'Peças Únicas', desc: 'Coleção exclusiva e curada com cuidado' },
   ]
@@ -102,7 +120,7 @@ export default async function HomePage() {
               </div>
               <div className="absolute -bottom-4 -right-8 bg-white rounded-2xl shadow-xl p-3">
                 <div className="text-xs font-bold text-gray-800">Frete Grátis</div>
-                <div className="text-[10px] text-gray-500">acima de R$299</div>
+                <div className="text-[10px] text-gray-500">acima de {fmt(freteGratis)}</div>
               </div>
             </div>
           </div>
@@ -214,7 +232,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* DEPOIMENTOS */}
+      {/* TOP BAR INFO */}
       <section className="bg-luxo-900 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="text-center mb-10">
