@@ -1,7 +1,13 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Mail, Instagram, MessageCircle, Send, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
+
+interface SiteConfig {
+  whatsapp?: string
+  instagram?: string
+  email_contato?: string
+}
 
 export default function ContatoPage() {
   const [nome, setNome] = useState('')
@@ -9,6 +15,23 @@ export default function ContatoPage() {
   const [assunto, setAssunto] = useState('')
   const [mensagem, setMensagem] = useState('')
   const [loading, setLoading] = useState(false)
+  const [config, setConfig] = useState<SiteConfig>({})
+
+  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(res => res.json())
+      .then(data => setConfig(data.data || {}))
+      .catch(() => {})
+  }, [])
+
+  const waNumero = config.whatsapp || '5511900000000'
+  const waLink = `https://wa.me/${waNumero}`
+  const igUser = config.instagram?.replace('@', '') || 'brechodeluxo'
+  const igLink = `https://instagram.com/${igUser}`
+  const emailFinal = config.email_contato || 'contato@brechodeluxo.com.br'
+  const telExibido = waNumero.length >= 12
+    ? `(${waNumero.slice(2, 4)}) 9-${waNumero.slice(5, 9)}-${waNumero.slice(9)}`
+    : '(11) 9-0000-0000'
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,7 +45,6 @@ export default function ContatoPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* HERO */}
       <div className="bg-gradient-to-br from-luxo-900 to-luxo-800 py-16">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h1 className="font-serif text-white text-4xl font-bold mb-3">Fale Conosco</h1>
@@ -64,34 +86,34 @@ export default function ContatoPage() {
           <div className="bg-white rounded-2xl shadow-sm p-6">
             <h3 className="font-semibold text-gray-800 mb-4">Canais de Atendimento</h3>
             <div className="space-y-4">
-              <a href="https://wa.me/5511000000000" target="_blank" rel="noreferrer"
+              <a href={waLink} target="_blank" rel="noreferrer"
                 className="flex items-center gap-4 p-4 rounded-xl bg-green-50 hover:bg-green-100 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
                   <MessageCircle className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">WhatsApp</p>
-                  <p className="text-sm text-gray-500">(11) 9-0000-0000</p>
+                  <p className="text-sm text-gray-500">{telExibido}</p>
                 </div>
               </a>
-              <a href="mailto:contato@brechodeluxo.com.br"
+              <a href={`mailto:${emailFinal}`}
                 className="flex items-center gap-4 p-4 rounded-xl bg-gold-50 hover:bg-gold-100 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gold-500 flex items-center justify-center">
                   <Mail className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">E-mail</p>
-                  <p className="text-sm text-gray-500">contato@brechodeluxo.com.br</p>
+                  <p className="text-sm text-gray-500">{emailFinal}</p>
                 </div>
               </a>
-              <a href="https://instagram.com" target="_blank" rel="noreferrer"
+              <a href={igLink} target="_blank" rel="noreferrer"
                 className="flex items-center gap-4 p-4 rounded-xl bg-purple-50 hover:bg-purple-100 transition-colors">
                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
                   <Instagram className="w-5 h-5 text-white" />
                 </div>
                 <div>
                   <p className="font-medium text-gray-800">Instagram</p>
-                  <p className="text-sm text-gray-500">@brechodeluxo</p>
+                  <p className="text-sm text-gray-500">@{igUser}</p>
                 </div>
               </a>
             </div>
