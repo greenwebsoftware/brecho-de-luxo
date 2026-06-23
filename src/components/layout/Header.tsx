@@ -1,9 +1,37 @@
 'use client'
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { ShoppingBag, Search, Menu, X, Heart, User, ChevronDown } from 'lucide-react'
+import { Search, Menu, X, Heart, User, ChevronDown } from 'lucide-react'
 import { useCarrinho } from '../../lib/carrinhoContext'
 import { CATEGORIAS, getCategoriaIcon } from '../../lib/menuConfig'
+
+// Icone de sacola estilizada
+function SacolaIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <path d="M16 10a4 4 0 01-8 0" />
+    </svg>
+  )
+}
+
+interface TooltipProps {
+  text: string
+  children: React.ReactNode
+}
+
+function Tooltip({ text, children }: TooltipProps) {
+  return (
+    <div className="relative group">
+      {children}
+      <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-luxo-900 text-white text-xs px-2 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+        {text}
+        <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-luxo-900 rotate-45" />
+      </div>
+    </div>
+  )
+}
 
 export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
@@ -30,7 +58,7 @@ export default function Header() {
   }
 
   const filtroParam = (cat: typeof CATEGORIAS[0]) =>
-    cat.tipo === 'marca' ? 'marca' : cat.tipo === 'genero' ? 'subcategoria' : 'subcategoria'
+    cat.tipo === 'marca' ? 'marca' : 'subcategoria'
 
   return (
     <>
@@ -78,7 +106,6 @@ export default function Header() {
                     <ChevronDown className="w-3.5 h-3.5" />
                   </Link>
 
-                  {/* MEGA MENU DROPDOWN */}
                   {megaAberto === cat.slug && (
                     <div
                       onMouseEnter={() => abrirMega(cat.slug)}
@@ -86,7 +113,6 @@ export default function Header() {
                       className="absolute top-full left-1/2 -translate-x-1/2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50"
                       style={{ minWidth: cat.tipo === 'genero' ? '560px' : '420px' }}
                     >
-                      {/* SETA DO DROPDOWN */}
                       <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-l border-t border-gray-100 rotate-45" />
 
                       {cat.tipo === 'genero' && cat.grupos ? (
@@ -155,31 +181,39 @@ export default function Header() {
             </nav>
 
             {/* ACOES */}
-            <div className="flex items-center gap-3">
-              <button onClick={() => setBuscaAberta(!buscaAberta)}
-                className="p-2 text-gray-600 hover:text-gold-600 transition-colors">
-                <Search className="w-5 h-5" />
-              </button>
+            <div className="flex items-center gap-1">
+              <Tooltip text="Buscar">
+                <button onClick={() => setBuscaAberta(!buscaAberta)}
+                  className="p-2 text-gray-600 hover:text-gold-600 transition-colors rounded-xl hover:bg-gray-50">
+                  <Search className="w-5 h-5" />
+                </button>
+              </Tooltip>
 
-              <Link href="/favoritos" className="p-2 text-gray-600 hover:text-gold-600 transition-colors hidden md:block">
-                <Heart className="w-5 h-5" />
-              </Link>
+              <Tooltip text="Favoritos">
+                <Link href="/favoritos" className="p-2 text-gray-600 hover:text-gold-600 transition-colors rounded-xl hover:bg-gray-50 hidden md:block">
+                  <Heart className="w-5 h-5" />
+                </Link>
+              </Tooltip>
 
-              <Link href="/conta" className="p-2 text-gray-600 hover:text-gold-600 transition-colors hidden md:block">
-                <User className="w-5 h-5" />
-              </Link>
+              <Tooltip text="Minha Conta">
+                <Link href="/conta" className="p-2 text-gray-600 hover:text-gold-600 transition-colors rounded-xl hover:bg-gray-50 hidden md:block">
+                  <User className="w-5 h-5" />
+                </Link>
+              </Tooltip>
 
-              <Link href="/checkout" className="relative p-2 text-gray-600 hover:text-gold-600 transition-colors">
-                <ShoppingBag className="w-5 h-5" />
-                {totalItens > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                    {totalItens > 9 ? '9+' : totalItens}
-                  </span>
-                )}
-              </Link>
+              <Tooltip text="Minha Sacola">
+                <Link href="/checkout" className="relative p-2 text-gray-600 hover:text-gold-600 transition-colors rounded-xl hover:bg-gray-50">
+                  <SacolaIcon className="w-5 h-5" />
+                  {totalItens > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                      {totalItens > 9 ? '9+' : totalItens}
+                    </span>
+                  )}
+                </Link>
+              </Tooltip>
 
               <button onClick={() => setMenuAberto(!menuAberto)}
-                className="md:hidden p-2 text-gray-600">
+                className="md:hidden p-2 text-gray-600 rounded-xl hover:bg-gray-50">
                 {menuAberto ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
@@ -204,7 +238,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* MENU MOBILE COM ACCORDION */}
+        {/* MENU MOBILE */}
         {menuAberto && (
           <div className="md:hidden border-t border-gray-100 bg-white max-h-[80vh] overflow-y-auto">
             <Link href="/" onClick={() => setMenuAberto(false)}
@@ -268,11 +302,11 @@ export default function Header() {
               Contato
             </Link>
             <div className="flex gap-4 px-6 py-3">
-              <Link href="/conta" className="text-sm text-gray-600 flex items-center gap-1">
-                <User className="w-4 h-4" />Minha Conta
+              <Link href="/conta" onClick={() => setMenuAberto(false)} className="text-sm text-gray-600 flex items-center gap-1">
+                <User className="w-4 h-4" /> Minha Conta
               </Link>
-              <Link href="/favoritos" className="text-sm text-gray-600 flex items-center gap-1">
-                <Heart className="w-4 h-4" />Favoritos
+              <Link href="/favoritos" onClick={() => setMenuAberto(false)} className="text-sm text-gray-600 flex items-center gap-1">
+                <Heart className="w-4 h-4" /> Favoritos
               </Link>
             </div>
           </div>
