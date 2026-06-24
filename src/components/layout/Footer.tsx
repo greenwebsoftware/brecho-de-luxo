@@ -1,5 +1,6 @@
 'use client'
 import Link from 'next/link'
+import ContadorVisitas from '../ContadorVisitas'
 import { useState, useEffect } from 'react'
 import { Instagram, Facebook, Mail, Phone, MapPin } from 'lucide-react'
 
@@ -134,6 +135,7 @@ export default function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-4 py-5 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-gray-500">
           <span>© 2026 Brechó de Luxo. Todos os direitos reservados.</span>
+          <ContadorVisitas />
           <span>Desenvolvido por <a href="#" className="text-gold-400">GreenWeb Softwares</a></span>
         </div>
       </div>

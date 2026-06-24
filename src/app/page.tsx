@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import ContadorVisitas from '../components/ContadorVisitas'
 import { ArrowRight, Shield, Truck, RefreshCw, Star } from 'lucide-react'
 import { createServerClient } from '../lib/supabase-server'
 
@@ -103,6 +104,10 @@ export default async function HomePage() {
               <div className="text-center">
                 <div className="text-2xl font-bold text-gold-400">2k+</div>
                 <div className="text-xs text-gray-400">Clientes felizes</div>
+              </div>
+              <div className="w-px h-10 bg-white/20" />
+              <div className="text-center">
+                <ContadorVisitas />
               </div>
             </div>
           </div>

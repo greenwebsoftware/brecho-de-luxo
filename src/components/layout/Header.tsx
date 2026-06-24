@@ -178,6 +178,9 @@ export default function Header() {
               <Link href="/contato" className="text-sm font-medium text-gray-700 hover:text-gold-600 transition-colors px-3 py-2">
                 Contato
               </Link>
+              <Link href="/blog" className="text-sm font-medium text-gray-700 hover:text-gold-600 transition-colors px-3 py-2">
+                Blog
+              </Link>
             </nav>
 
             {/* ACOES */}
@@ -300,6 +303,10 @@ export default function Header() {
             <Link href="/contato" onClick={() => setMenuAberto(false)}
               className="block px-6 py-3 text-sm text-gray-700 hover:bg-gold-50 border-b border-gray-50">
               Contato
+            </Link>
+            <Link href="/blog" onClick={() => setMenuAberto(false)}
+              className="block px-6 py-3 text-sm text-gray-700 hover:bg-gold-50 border-b border-gray-50">
+              Blog
             </Link>
             <div className="flex gap-4 px-6 py-3">
               <Link href="/conta" onClick={() => setMenuAberto(false)} className="text-sm text-gray-600 flex items-center gap-1">
