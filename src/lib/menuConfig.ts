@@ -84,6 +84,7 @@ export const CATEGORIAS: Categoria[] = [
       { label: 'Guess', slug: 'guess' },
       { label: 'Arezzo', slug: 'arezzo' },
       { label: 'Burberry', slug: 'burberry' },
+      { label: 'Outras Marcas', slug: 'outras-marcas' },
     ],
   },
   {
