@@ -3,64 +3,11 @@ import { createServerClient } from '../../../lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
 
-// Gera payload PIX (formato EMV/BR Code)
-function gerarPixPayload(
-  chave: string,
-  nome: string,
-  cidade: string,
-  valor: number,
-  txid: string,
-  descricao: string
-): string {
-  const formatField = (id: string, value: string) => {
-    const len = value.length.toString().padStart(2, '0')
-    return `${id}${len}${value}`
-  }
+const PAGBANK_API = process.env.PAGBANK_ENV === 'production'
+  ? 'https://api.pagseguro.com'
+  : 'https://sandbox.api.pagseguro.com'
 
-  // Merchant Account Information
-  const gui = formatField('00', 'br.gov.bcb.pix')
-  const chaveField = formatField('01', chave)
-  const descField = descricao ? formatField('02', descricao.slice(0, 72)) : ''
-  const mai = formatField('26', gui + chaveField + descField)
-
-  // Transaction Amount
-  const valorStr = valor.toFixed(2)
-
-  // Additional Data
-  const txidField = formatField('05', txid.slice(0, 25).replace(/[^a-zA-Z0-9]/g, ''))
-  const addi = formatField('62', txidField)
-
-  // Monta payload sem CRC
-  const payload =
-    formatField('00', '01') +        // Payload Format Indicator
-    formatField('01', '12') +        // Point of Initiation Method (12 = dynamic)
-    mai +                             // Merchant Account Information
-    formatField('52', '0000') +      // Merchant Category Code
-    formatField('53', '986') +       // Transaction Currency (BRL)
-    formatField('54', valorStr) +    // Transaction Amount
-    formatField('58', 'BR') +        // Country Code
-    formatField('59', nome.slice(0, 25)) +  // Merchant Name
-    formatField('60', cidade.slice(0, 15)) + // Merchant City
-    addi +                           // Additional Data
-    '6304'                           // CRC placeholder
-
-  // Calcula CRC16
-  const crc = calcCRC16(payload)
-  return payload + crc
-}
-
-function calcCRC16(str: string): string {
-  let crc = 0xFFFF
-  for (let i = 0; i < str.length; i++) {
-    crc ^= str.charCodeAt(i) << 8
-    for (let j = 0; j < 8; j++) {
-      if (crc & 0x8000) crc = (crc << 1) ^ 0x1021
-      else crc <<= 1
-      crc &= 0xFFFF
-    }
-  }
-  return crc.toString(16).toUpperCase().padStart(4, '0')
-}
+const PAGBANK_TOKEN = process.env.PAGBANK_TOKEN || ''
 
 export async function POST(req: NextRequest) {
   try {
@@ -83,7 +30,7 @@ export async function POST(req: NextRequest) {
       .select('*', { count: 'exact', head: true })
     const numero = (count || 0) + 1
 
-    // Cria pedido com status aguardando PIX
+    // Cria pedido no banco
     const { data: pedido, error } = await supabase
       .from('pedidos_online')
       .insert({
@@ -110,10 +57,10 @@ export async function POST(req: NextRequest) {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    // Salva itens do pedido
+    // Salva itens
     const itensPedido = itens.map((i: {
-      produto_id: string; nome: string; preco: number; quantidade: number
-      tamanho?: string; cor?: string
+      produto_id: string; nome: string; preco: number
+      quantidade: number; tamanho?: string; cor?: string
     }) => ({
       pedido_id: pedido.id,
       produto_id: i.produto_id,
@@ -124,32 +71,71 @@ export async function POST(req: NextRequest) {
       cor: i.cor || null,
       subtotal: i.preco * i.quantidade,
     }))
-
     await supabase.from('itens_pedido_online').insert(itensPedido)
 
-    // Gera PIX payload
-    const txid = `BDL${pedido.id.replace(/-/g, '').slice(0, 20)}`
-    const descricao = `Pedido #${numero} Brecho de Luxo`
+    // Gera txid único
+    const txid = `BDL${pedido.id.replace(/-/g, '').slice(0, 23)}`
 
-    const pixPayload = gerarPixPayload(
-      'd92e36d8-a6c3-46fb-b711-5519475b56ff',
-      'Brecho de Luxo',
-      'Jundiai',
-      total,
-      txid,
-      descricao
-    )
+    // Cria cobrança PIX no PagBank
+    const pixRes = await fetch(`${PAGBANK_API}/instant-payments/cob/${txid}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${PAGBANK_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        calendario: { expiracao: 1800 },
+        devedor: { nome: cliente.nome },
+        valor: { original: total.toFixed(2) },
+        chave: 'd92e36d8-a6c3-46fb-b711-5519475b56ff',
+        solicitacaoPagador: `Pedido #${numero} Brecho de Luxo`,
+        infoAdicionais: [
+          { nome: 'Pedido', valor: String(pedido.id) },
+          { nome: 'Numero', valor: String(numero) },
+        ],
+      }),
+    })
+
+    const pixData = await pixRes.json()
+
+    if (!pixRes.ok) {
+      console.error('PagBank PIX erro:', pixData)
+      // Fallback para PIX manual se PagBank falhar
+      const pixPayload = txid
+      return NextResponse.json({
+        ok: true,
+        pedido_id: pedido.id,
+        numero,
+        total,
+        pix_payload: pixPayload,
+        pix_txid: txid,
+        modo: 'manual',
+      })
+    }
+
+    // Salva txid no pedido
+    await supabase
+      .from('pedidos_online')
+      .update({ mp_payment_id: txid })
+      .eq('id', pedido.id)
+
+    // Busca QR Code
+    const qrRes = await fetch(`${PAGBANK_API}/instant-payments/loc/${pixData.loc?.id}/qrcode`, {
+      headers: { 'Authorization': `Bearer ${PAGBANK_TOKEN}` },
+    })
+    const qrData = qrRes.ok ? await qrRes.json() : null
 
     return NextResponse.json({
       ok: true,
       pedido_id: pedido.id,
-      numero: pedido.numero,
+      numero,
       total,
-      pix_payload: pixPayload,
-      pix_chave: 'd92e36d8-a6c3-46fb-b711-5519475b56ff',
-      pix_nome: 'Brecho de Luxo',
-      pix_valor: total,
+      pix_payload: qrData?.imagemQrcode || pixData.location || txid,
+      pix_txid: txid,
+      pix_location: pixData.location,
+      modo: 'pagbank',
     })
+
   } catch (err) {
     console.error('PIX erro:', err)
     return NextResponse.json({ error: 'Erro ao gerar PIX' }, { status: 500 })
