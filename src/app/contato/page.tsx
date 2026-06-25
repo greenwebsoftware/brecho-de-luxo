@@ -6,6 +6,8 @@ import toast from 'react-hot-toast'
 interface SiteConfig {
   whatsapp?: string
   instagram?: string
+  facebook?: string
+  tiktok?: string
   email_contato?: string
 }
 
@@ -26,6 +28,8 @@ export default function ContatoPage() {
 
   const waNumero = config.whatsapp || '5511900000000'
   const waLink = `https://wa.me/${waNumero}`
+  const ttUser = (config.tiktok || '').replace('@', '').replace('https://tiktok.com/', '').replace('https://www.tiktok.com/@', '')
+  const ttLink = ttUser ? `https://www.tiktok.com/@${ttUser}` : null
   const igUser = (config.instagram || 'brechodeluxo').startsWith('http') ? (config.instagram || '').replace(/.*instagram\.com\//, '').replace(/\//g, '') : (config.instagram || 'brechodeluxo').replace('@', '')
   const igLink = (config.instagram || '').startsWith('http') ? (config.instagram || '') : `https://instagram.com/${(config.instagram || 'brechodeluxo').replace('@', '')}`
   const emailFinal = config.email_contato || 'contato@brechodeluxo.com.br'
@@ -116,6 +120,20 @@ export default function ContatoPage() {
                   <p className="text-sm text-gray-500">@{igUser}</p>
                 </div>
               </a>
+              {ttLink && (
+                <a href={ttLink} target="_blank" rel="noreferrer"
+                  className="flex items-center gap-4 p-4 rounded-xl bg-gray-50 hover:bg-gray-100 transition-colors">
+                  <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center">
+                    <svg viewBox="0 0 24 24" fill="white" className="w-5 h-5">
+                      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.75a4.85 4.85 0 01-1.01-.06z"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-800">TikTok</p>
+                    <p className="text-sm text-gray-500">@{ttUser}</p>
+                  </div>
+                </a>
+              )}
             </div>
           </div>
 

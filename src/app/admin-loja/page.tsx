@@ -4,9 +4,10 @@ import {
   Eye, EyeOff, Star, StarOff, Package, ShoppingBag, TrendingUp,
   Clock, Lock, LogOut, Save, Loader2, Plus, Trash2, Upload, X,
   Edit, FileText, MessageSquare, CheckCircle, XCircle, AlertTriangle,
-  Video, Image as ImageIcon, Tag, Globe, EyeOff as Hide
+  Video, Image as ImageIcon, Tag, Globe, EyeOff as Hide, Share2
 } from 'lucide-react'
 import toast from 'react-hot-toast'
+import GeradorConteudo from '../../components/GeradorConteudo'
 
 // ---- TIPOS ----
 interface Produto { id: string; nome: string; preco_venda: number; estoque_atual: number; visivel_site: boolean; destaque: boolean; imagem_url?: string; imagens_site?: string[]; publicado_loja?: boolean }
@@ -78,6 +79,8 @@ export default function AdminLojaPage() {
   const [formBlog, setFormBlog] = useState({ titulo: '', resumo: '', conteudo: '', imagem_capa: '', video_url: '', tags: [] as string[], publicado: false, destaque: false })
   const [novaTag, setNovaTag] = useState('')
   const [salvandoBlog, setSalvandoBlog] = useState(false)
+  const [geradorProduto, setGeradorProduto] = useState<Produto | ProdutoOnline | null>(null)
+  const [geradorPost, setGeradorPost] = useState<BlogPost | null>(null)
 
   useEffect(() => { verificarLogin() }, [])
   useEffect(() => { if (autenticado && aba === 'moderacao') carregarComentarios() }, [aba, statusComentario])
@@ -410,6 +413,10 @@ export default function AdminLojaPage() {
                         <button onClick={() => abrirModalPublicar(p)} className="bg-luxo-700 hover:bg-luxo-800 text-white text-xs px-3 py-1.5 rounded-lg">
                           {p.publicado_loja ? '✏️ Editar' : '🚀 Publicar'}
                         </button>
+                        <button onClick={() => setGeradorProduto(p)}
+                          className="mt-1 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 px-3 py-1.5 rounded-lg w-full">
+                          📱 Gerar Post
+                        </button>
                       </td>
                     </tr>
                   )
@@ -498,6 +505,7 @@ export default function AdminLojaPage() {
                       {p.publicado ? <><Globe className="w-3 h-3" /> Publicado</> : <><Hide className="w-3 h-3" /> Rascunho</>}
                     </button>
                     <button onClick={() => abrirEditarBlog(p)} className="w-8 h-8 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg flex items-center justify-center"><Edit className="w-4 h-4" /></button>
+                    <button onClick={() => setGeradorPost(p)} className="w-8 h-8 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center" title="Gerar post redes sociais"><Share2 className="w-4 h-4" /></button>
                     <button onClick={() => excluirBlog(p.id)} className="w-8 h-8 bg-red-50 hover:bg-red-100 text-red-500 rounded-lg flex items-center justify-center"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
@@ -894,6 +902,27 @@ export default function AdminLojaPage() {
               </button>
             </div>
           </div>
+        </div>
+      )}
+      {/* MODAL GERADOR DE CONTEUDO */}
+      {(geradorProduto || geradorPost) && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <GeradorConteudo
+            produto={geradorProduto ? {
+              nome: (geradorProduto as Produto).nome || (geradorProduto as ProdutoOnline).nome,
+              preco: (geradorProduto as Produto).preco_venda || (geradorProduto as ProdutoOnline).preco,
+              marca: (geradorProduto as ProdutoOnline).marca,
+              categoria: (geradorProduto as ProdutoOnline).categoria,
+              descricao: (geradorProduto as ProdutoOnline).descricao,
+              imagem: ((geradorProduto as ProdutoOnline).fotos?.[0]) || (geradorProduto as Produto).imagem_url,
+            } : undefined}
+            post={geradorPost ? {
+              titulo: geradorPost.titulo,
+              resumo: geradorPost.resumo,
+              tags: geradorPost.tags,
+            } : undefined}
+            onFechar={() => { setGeradorProduto(null); setGeradorPost(null) }}
+          />
         </div>
       )}
     </div>
