@@ -34,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Footer />
           <WhatsAppFloat />
           <Toaster position="top-right" toastOptions={{
-            style: { background: '#1a0533', color: 'white', borderRadius: '12px' }
+            style: { background: '#1a1a1a', color: 'white', borderRadius: '12px' }
           }} />
         </CarrinhoProvider>
       </body>

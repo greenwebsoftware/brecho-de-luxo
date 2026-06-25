@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { Search, Menu, X, Heart, User, ChevronDown } from 'lucide-react'
 import { useCarrinho } from '../../lib/carrinhoContext'
 import { CATEGORIAS, getCategoriaIcon } from '../../lib/menuConfig'
+import LogoBrEcho from '../LogoBrEcho'
 
 // Icone de sacola estilizada
 function SacolaIcon({ className }: { className?: string }) {
@@ -76,9 +77,7 @@ export default function Header() {
 
             {/* LOGO */}
             <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-gold-400 to-gold-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg font-serif">B</span>
-              </div>
+              <LogoBrEcho />
               <div>
                 <div className="font-serif font-bold text-luxo-900 text-lg leading-tight">Brechó de Luxo</div>
                 <div className="text-gold-500 text-[10px] tracking-widest uppercase">Moda Premium</div>

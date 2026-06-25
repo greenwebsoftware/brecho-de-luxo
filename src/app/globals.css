@@ -6,8 +6,8 @@
 :root {
   --gold: #d4a017;
   --gold-light: #efc040;
-  --luxo: #7c3aed;
-  --dark: #1a0533;
+  --luxo: #1a1a1a;
+  --dark: #1a1a1a;
 }
 
 * { scroll-behavior: smooth; }
