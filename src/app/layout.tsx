@@ -62,7 +62,7 @@ export const metadata: Metadata = {
     canonical: SITE_URL,
   },
   verification: {
-    google: 'COLE_AQUI_SEU_GOOGLE_SEARCH_CONSOLE_ID',
+    google: 'k4jyCmIH2z84Jy0_dS_H52R5hBTc3RFDu0E14c66lYI',
   },
   category: 'shopping',
 }
