@@ -35,6 +35,7 @@ function Tooltip({ text, children }: TooltipProps) {
 
 export default function Header() {
   const [menuAberto, setMenuAberto] = useState(false)
+  const [freteGratis, setFreteGratis] = useState(299)
   const [scrolled, setScrolled] = useState(false)
   const [buscaAberta, setBuscaAberta] = useState(false)
   const [busca, setBusca] = useState('')
@@ -42,6 +43,13 @@ export default function Header() {
   const [mobileSubAberto, setMobileSubAberto] = useState<string | null>(null)
   const { totalItens } = useCarrinho()
   const closeTimer = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => { if (d.data?.frete_gratis_acima) setFreteGratis(Number(d.data.frete_gratis_acima)) })
+      .catch(() => {})
+  }, [])
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50)
@@ -64,7 +72,7 @@ export default function Header() {
     <>
       {/* TOP BAR */}
       <div className="bg-luxo-900 text-gold-300 text-xs text-center py-2 px-4">
-        Frete grátis nas compras acima de R$299 &bull; Parcele em até 6x sem juros
+        {`Frete grátis nas compras acima de R$${freteGratis}`} &bull; Parcele em até 6x sem juros
       </div>
 
       {/* HEADER PRINCIPAL */}
