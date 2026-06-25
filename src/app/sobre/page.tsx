@@ -1,3 +1,9 @@
+export const metadata = {
+  title: 'Sobre Nós | Nossa História e Missão',
+  description: 'Conheça o Brechó de Luxo de Jundiaí-SP. Nossa missão é democratizar o acesso à moda premium através da moda circular sustentável em São Paulo e região.',
+  keywords: 'sobre brechó de luxo Jundiaí, moda circular SP, sustentabilidade moda luxo',
+}
+
 import { Shield, Heart, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 
