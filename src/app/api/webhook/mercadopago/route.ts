@@ -5,6 +5,35 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
   try {
+    // Valida assinatura do Mercado Pago
+    const secret = process.env.MP_WEBHOOK_SECRET
+    if (secret) {
+      const xSignature = req.headers.get('x-signature')
+      const xRequestId = req.headers.get('x-request-id')
+      const urlParams = new URL(req.url).searchParams
+      const dataId = urlParams.get('data.id')
+
+      if (xSignature) {
+        const parts = xSignature.split(',')
+        const ts = parts.find(p => p.startsWith('ts='))?.split('=')[1]
+        const v1 = parts.find(p => p.startsWith('v1='))?.split('=')[1]
+
+        if (ts && v1) {
+          const manifest = `id:${dataId};request-id:${xRequestId};ts:${ts};`
+          const encoder = new TextEncoder()
+          const keyData = encoder.encode(secret)
+          const msgData = encoder.encode(manifest)
+          const cryptoKey = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
+          const signature = await crypto.subtle.sign('HMAC', cryptoKey, msgData)
+          const hashHex = Array.from(new Uint8Array(signature)).map(b => b.toString(16).padStart(2, '0')).join('')
+          if (hashHex !== v1) {
+            console.warn('Webhook: assinatura inválida')
+            return NextResponse.json({ error: 'Assinatura inválida' }, { status: 401 })
+          }
+        }
+      }
+    }
+
     const body = await req.json()
     const { type, data } = body
 
