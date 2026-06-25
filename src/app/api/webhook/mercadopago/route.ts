@@ -4,73 +4,122 @@ import { createServerClient } from '../../../../lib/supabase-server'
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
-  const supabase = createServerClient()
   try {
     const body = await req.json()
     const { type, data } = body
-    if (type !== 'payment') return NextResponse.json({ ok: true })
 
-    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${data.id}`, {
-      headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+    // Verifica se é notificação de pagamento aprovado
+    if (type !== 'payment' && type !== 'payment.updated') {
+      return NextResponse.json({ ok: true })
+    }
+
+    const paymentId = data?.id
+    if (!paymentId) return NextResponse.json({ ok: true })
+
+    // Busca dados do pagamento no Mercado Pago
+    const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
+      headers: { 'Authorization': `Bearer ${process.env.MP_ACCESS_TOKEN}` }
     })
-    const pagamento = await mpRes.json()
-    const status = pagamento.status
-    const pedidoId = pagamento.external_reference
-    if (!pedidoId) return NextResponse.json({ ok: true })
+    const payment = await mpRes.json()
 
-    const novoStatus = status === 'approved' ? 'pagamento_aprovado'
-      : status === 'rejected' ? 'cancelado' : 'aguardando_pagamento'
+    if (payment.status !== 'approved') return NextResponse.json({ ok: true })
 
-    await supabase.from('pedidos_online').update({
-      gateway_status: status,
-      status: novoStatus,
-      atualizado_em: new Date().toISOString(),
-    }).eq('id', pedidoId)
+    const supabase = createServerClient()
+    const externalRef = payment.external_reference
 
-    if (status === 'approved') {
-      const { data: pedido } = await supabase
-        .from('pedidos_online')
-        .select('*, itens_pedido_online(*)')
-        .eq('id', pedidoId)
+    // Busca pedido pelo external_reference
+    const { data: pedido } = await supabase
+      .from('pedidos_online')
+      .select('*, itens_pedido_online(*)')
+      .eq('id', externalRef)
+      .single()
+
+    if (!pedido || pedido.integrado_modasystem) {
+      return NextResponse.json({ ok: true })
+    }
+
+    // Atualiza status do pedido
+    await supabase
+      .from('pedidos_online')
+      .update({
+        status: 'pagamento_aprovado',
+        integrado_modasystem: true,
+        mp_payment_id: String(paymentId),
+      })
+      .eq('id', externalRef)
+
+    // Processa cada item do pedido
+    for (const item of pedido.itens_pedido_online || []) {
+      const produtoId = item.produto_id
+
+      // 1. Busca produto no estoque físico
+      const { data: produto } = await supabase
+        .from('produtos')
+        .select('id, nome, estoque_atual, preco_venda')
+        .eq('id', produtoId)
         .single()
 
-      if (pedido && !pedido.integrado_modasystem) {
-        const { data: venda } = await supabase.from('vendas').insert({
-          desconto: pedido.desconto || 0,
-          subtotal: pedido.subtotal,
-          total: pedido.total,
-          forma_pagamento: 'pix',
-          status: 'concluida',
-          observacoes: `Venda Online #${pedido.numero} — ${pedido.cliente_nome}`,
-        }).select().single()
+      if (!produto) continue
 
-        if (venda) {
-          for (const item of (pedido.itens_pedido_online || [])) {
-            await supabase.from('itens_venda').insert({
-              venda_id: venda.id,
-              produto_id: item.produto_id,
-              quantidade: item.quantidade,
-              preco_unitario: item.preco_unitario,
-              subtotal: item.subtotal,
-            })
-            if (item.produto_id) {
-              const { data: prod } = await supabase.from('produtos').select('estoque_atual').eq('id', item.produto_id).single()
-              if (prod) {
-                const novoEst = Math.max(0, prod.estoque_atual - item.quantidade)
-                await supabase.from('produtos').update({ estoque_atual: novoEst }).eq('id', item.produto_id)
-              }
-            }
-          }
-          await supabase.from('pedidos_online').update({
-            integrado_modasystem: true,
-            venda_modasystem_id: venda.id,
-            status: 'em_separacao',
-          }).eq('id', pedidoId)
-        }
-      }
+      // 2. Baixa estoque físico
+      const novoEstoque = Math.max(0, produto.estoque_atual - item.quantidade)
+      await supabase
+        .from('produtos')
+        .update({ estoque_atual: novoEstoque })
+        .eq('id', produtoId)
+
+      // 3. Registra movimentação de estoque
+      await supabase
+        .from('movimentacoes_estoque')
+        .insert({
+          produto_id: produtoId,
+          tipo: 'saida',
+          quantidade: item.quantidade,
+          motivo: 'Venda Online',
+          observacao: `Pedido #${pedido.numero} — ${payment.payer?.email || 'Cliente Online'}`,
+          estoque_anterior: produto.estoque_atual,
+          estoque_posterior: novoEstoque,
+        })
     }
+
+    // 4. Lança venda no financeiro da loja física
+    const totalVenda = pedido.total - (pedido.frete || 0)
+
+    await supabase
+      .from('financeiro')
+      .insert({
+        tipo: 'receita',
+        categoria: 'Vendas Online',
+        descricao: `Venda Online #${pedido.numero} — ${pedido.cliente_nome}`,
+        valor: totalVenda,
+        data_lancamento: new Date().toISOString(),
+        data_competencia: new Date().toISOString().split('T')[0],
+        forma_pagamento: 'mercado_pago',
+        status: 'confirmado',
+        observacao: `MP Payment ID: ${paymentId} | Frete: R$ ${pedido.frete || 0}`,
+      })
+
+    // 5. Se houve frete, lança como receita separada
+    if (pedido.frete && pedido.frete > 0) {
+      await supabase
+        .from('financeiro')
+        .insert({
+          tipo: 'receita',
+          categoria: 'Frete',
+          descricao: `Frete Pedido Online #${pedido.numero}`,
+          valor: pedido.frete,
+          data_lancamento: new Date().toISOString(),
+          data_competencia: new Date().toISOString().split('T')[0],
+          forma_pagamento: 'mercado_pago',
+          status: 'confirmado',
+        })
+    }
+
+    console.log(`✅ Pedido #${pedido.numero} integrado — Estoque baixado — Financeiro lançado`)
     return NextResponse.json({ ok: true })
+
   } catch (err) {
+    console.error('Webhook erro:', err)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
