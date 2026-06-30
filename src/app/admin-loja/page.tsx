@@ -16,6 +16,8 @@ interface ProdutoOnline { id: string; nome: string; preco: number; preco_promoci
 interface Pedido { id: string; numero: number; cliente_nome: string; total: number; status: string; criado_em: string; integrado_modasystem: boolean }
 interface SiteConfig { whatsapp?: string; instagram?: string; facebook?: string; tiktok?: string; email_contato?: string; frete_gratis_acima?: number; frete_fixo?: number; cep_origem?: string; melhor_envio_token?: string }
 interface BlogPost { id: string; titulo: string; slug: string; resumo?: string; conteudo: string; imagem_capa?: string; video_url?: string; tags: string[]; publicado: boolean; destaque: boolean; visualizacoes: number; curtidas: number; criado_em: string }
+interface CategoriaLoja { id: string; label: string; slug: string; tipo: string; pai_slug?: string; ordem: number; ativo: boolean }
+
 interface Comentario { id: string; conteudo: string; status: string; motivo_rejeicao?: string; criado_em: string; nome_visitante?: string; blog_posts?: { titulo: string }; clientes_site?: { nome: string } }
 
 const CATEGORIAS_OPTS = ['Roupas', 'Bolsas', 'Calçados', 'Acessórios']
@@ -44,7 +46,7 @@ export default function AdminLojaPage() {
   const [senha, setSenha] = useState('')
   const [loginLoading, setLoginLoading] = useState(false)
   const [loginErro, setLoginErro] = useState('')
-  const [aba, setAba] = useState<'pedidos' | 'produtos' | 'online' | 'blog' | 'moderacao' | 'config'>('pedidos')
+  const [aba, setAba] = useState<'pedidos' | 'produtos' | 'online' | 'blog' | 'moderacao' | 'categorias' | 'config'>('pedidos')
   const [loading, setLoading] = useState(true)
 
   // Dados
@@ -54,6 +56,9 @@ export default function AdminLojaPage() {
   const [blogPosts, setBlogPosts] = useState<BlogPost[]>([])
   const [comentarios, setComentarios] = useState<Comentario[]>([])
   const [statusComentario, setStatusComentario] = useState('pendente')
+  const [categoriasLoja, setCategoriasLoja] = useState<CategoriaLoja[]>([])
+  const [formCat, setFormCat] = useState({ label: '', slug: '', tipo: 'item', pai_slug: '' })
+  const [salvandoCat, setSalvandoCat] = useState(false)
   const [config, setConfig] = useState<SiteConfig>({})
   const [salvandoConfig, setSalvandoConfig] = useState(false)
 
@@ -109,19 +114,20 @@ export default function AdminLojaPage() {
 
   const carregarDados = async () => {
     setLoading(true)
-    const [pRes, pedRes, poRes, blogRes, confRes] = await Promise.all([
+    const [pRes, pedRes, poRes, blogRes, confRes, catRes] = await Promise.all([
       fetch('/api/admin/produtos'), fetch('/api/admin/pedidos'),
       fetch('/api/admin/produtos-online'), fetch('/api/admin/blog'),
-      fetch('/api/admin/config'),
+      fetch('/api/admin/config'), fetch('/api/categorias-loja'),
     ])
-    const [pData, pedData, poData, blogData, confData] = await Promise.all([
-      pRes.json(), pedRes.json(), poRes.json(), blogRes.json(), confRes.json()
+    const [pData, pedData, poData, blogData, confData, catData] = await Promise.all([
+      pRes.json(), pedRes.json(), poRes.json(), blogRes.json(), confRes.json(), catRes.json()
     ])
     setProdutos(pData.data || [])
     setPedidos(pedData.data || [])
     setProdutosOnline(poData.data || [])
     setBlogPosts(blogData.data || [])
     setConfig(confData.data || {})
+    setCategoriasLoja(catData.data || [])
     setLoading(false)
   }
 
@@ -244,6 +250,39 @@ export default function AdminLojaPage() {
     toast.success('Comentário excluído')
   }
 
+  const salvarCategoria = async () => {
+    if (!formCat.label || !formCat.slug || !formCat.tipo) {
+      toast.error('Label, slug e tipo são obrigatórios')
+      return
+    }
+    setSalvandoCat(true)
+    const res = await fetch('/api/categorias-loja', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formCat)
+    })
+    if (res.ok) {
+      toast.success('Categoria adicionada!')
+      setFormCat({ label: '', slug: '', tipo: 'item', pai_slug: '' })
+      carregarDados()
+    } else {
+      const err = await res.json()
+      toast.error(err.error || 'Erro ao salvar')
+    }
+    setSalvandoCat(false)
+  }
+
+  const excluirCategoria = async (id: string) => {
+    if (!confirm('Remover esta categoria?')) return
+    await fetch('/api/categorias-loja', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id })
+    })
+    toast.success('Categoria removida!')
+    carregarDados()
+  }
+
   const salvarConfig = async () => {
     setSalvandoConfig(true)
     const res = await fetch('/api/admin/config', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config) })
@@ -319,6 +358,7 @@ export default function AdminLojaPage() {
             { key: 'online', label: 'Produtos Online' },
             { key: 'blog', label: '✍️ Blog' },
             { key: 'moderacao', label: '🛡️ Moderação' },
+            { key: 'categorias', label: 'Categorias' },
             { key: 'config', label: 'Configurações' },
           ].map(a => (
             <button key={a.key} onClick={() => setAba(a.key as typeof aba)}
@@ -584,7 +624,113 @@ export default function AdminLojaPage() {
           </div>
         )}
 
-        {/* ---- CONFIGURAÇÕES ---- */}
+
+        {/* ---- CATEGORIAS ---- */}
+        {aba === 'categorias' && (
+          <div className="space-y-6">
+            {/* Formulário adicionar */}
+            <div className="bg-white rounded-2xl shadow-sm p-6">
+              <h3 className="font-semibold text-gray-800 mb-4">Adicionar Nova Categoria/Subcategoria</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Nome (Label)</label>
+                  <input value={formCat.label} onChange={e => {
+                    const label = e.target.value
+                    const slug = label.toLowerCase()
+                      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                      .replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                    setFormCat({ ...formCat, label, slug })
+                  }} className="input-luxo" placeholder="Ex: Michael Kors" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Slug (URL)</label>
+                  <input value={formCat.slug} onChange={e => setFormCat({ ...formCat, slug: e.target.value })} className="input-luxo" placeholder="Ex: michael-kors" />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Tipo</label>
+                  <select value={formCat.tipo} onChange={e => setFormCat({ ...formCat, tipo: e.target.value })} className="input-luxo">
+                    <option value="item">Item (subcategoria/marca)</option>
+                    <option value="grupo">Grupo (ex: Feminino)</option>
+                    <option value="subcategoria">Categoria raiz</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Pertence a (pai)</label>
+                  <select value={formCat.pai_slug} onChange={e => setFormCat({ ...formCat, pai_slug: e.target.value })} className="input-luxo">
+                    <option value="">Nenhum (categoria raiz)</option>
+                    {categoriasLoja.filter(c => c.tipo !== 'item').map(c => (
+                      <option key={c.slug} value={c.slug}>{c.label} ({c.slug})</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <button onClick={salvarCategoria} disabled={salvandoCat} className="btn-gold mt-4 disabled:opacity-50">
+                {salvandoCat ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                Adicionar Categoria
+              </button>
+            </div>
+
+            {/* Lista por categoria raiz */}
+            {['roupas', 'bolsas', 'calcados', 'acessorios'].map(catSlug => {
+              const catRaiz = categoriasLoja.find(c => c.slug === catSlug)
+              if (!catRaiz) return null
+              const grupos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'grupo')
+              const itensDirectos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'item')
+
+              return (
+                <div key={catSlug} className="bg-white rounded-2xl shadow-sm overflow-hidden">
+                  <div className="bg-luxo-900 px-6 py-3 flex items-center justify-between">
+                    <h3 className="text-white font-semibold">{catRaiz.label}</h3>
+                    <span className="text-gold-300 text-xs">{catRaiz.tipo}</span>
+                  </div>
+
+                  {grupos.length > 0 ? (
+                    <div className="p-4 grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {grupos.map(grupo => {
+                        const itens = categoriasLoja.filter(c => c.pai_slug === grupo.slug)
+                        return (
+                          <div key={grupo.slug} className="border border-gray-100 rounded-xl p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <p className="text-xs font-bold text-gold-600 uppercase">{grupo.label}</p>
+                              <button onClick={() => excluirCategoria(grupo.id)} className="text-red-400 hover:text-red-600">
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+                            <ul className="space-y-1">
+                              {itens.map(item => (
+                                <li key={item.slug} className="flex items-center justify-between text-sm text-gray-600">
+                                  <span>{item.label}</span>
+                                  <button onClick={() => excluirCategoria(item.id)} className="text-red-300 hover:text-red-500 ml-2">
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  ) : (
+                    <div className="p-4">
+                      <div className="flex flex-wrap gap-2">
+                        {itensDirectos.map(item => (
+                          <div key={item.slug} className="flex items-center gap-1 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
+                            <span className="text-sm text-gray-700">{item.label}</span>
+                            <button onClick={() => excluirCategoria(item.id)} className="text-red-300 hover:text-red-500 ml-1">
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        )}
+
+        {/* ---- CONFIGURAÇÕES ---- */
         {aba === 'config' && (
           <div className="bg-white rounded-2xl shadow-sm p-6 max-w-2xl space-y-4">
             <h3 className="font-semibold text-gray-800 mb-1">Contato e Redes Sociais</h3>
