@@ -730,7 +730,7 @@ export default function AdminLojaPage() {
           </div>
         )}
 
-        {/* ---- CONFIGURAÇÕES ---- */
+        {/* ---- CONFIGURAÇÕES ---- */}
         {aba === 'config' && (
           <div className="bg-white rounded-2xl shadow-sm p-6 max-w-2xl space-y-4">
             <h3 className="font-semibold text-gray-800 mb-1">Contato e Redes Sociais</h3>
