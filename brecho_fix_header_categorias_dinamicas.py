@@ -1,4 +1,36 @@
-// Estrutura de categorias e subcategorias do Brechó de Luxo
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
+
+# ── API pública de categorias (já existe, mas vamos garantir) ─
+api_dir = os.path.join(base, 'src', 'app', 'api', 'categorias-loja')
+os.makedirs(api_dir, exist_ok=True)
+api_path = os.path.join(api_dir, 'route.ts')
+
+if not os.path.isfile(api_path):
+    with open(api_path, 'w', encoding='utf-8', newline='\n') as f:
+        f.write('''import { NextRequest, NextResponse } from 'next/server'
+import { createServerClient } from '../../../lib/supabase-server'
+export const dynamic = 'force-dynamic'
+export async function GET() {
+  const supabase = createServerClient()
+  const { data, error } = await supabase
+    .from('categorias_loja')
+    .select('*')
+    .eq('ativo', true)
+    .order('ordem')
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ data: data || [] })
+}
+''')
+    print('OK: API /api/categorias-loja garantida')
+else:
+    print('OK: API /api/categorias-loja ja existe')
+
+# ── Atualiza menuConfig.ts para exportar função de build a partir do banco ──
+menu_config = os.path.join(base, 'src', 'lib', 'menuConfig.ts')
+
+novo_menu = '''// Estrutura de categorias e subcategorias do Brechó de Luxo
 // As categorias raiz são fixas; os itens vêm do banco via /api/categorias-loja
 
 export interface SubCategoria {
@@ -126,3 +158,70 @@ export function getCategoriaIcon(slug: string): string {
   }
   return icons[slug] || '✿'
 }
+'''
+
+with open(menu_config, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(novo_menu)
+print('OK: menuConfig.ts atualizado com buildCategorias')
+
+# ── Atualiza Header para buscar categorias do banco ──────────
+header_path = os.path.join(base, 'src', 'components', 'layout', 'Header.tsx')
+
+with open(header_path, 'r', encoding='utf-8') as f:
+    h = f.read()
+
+# Atualiza import para incluir buildCategorias e CATS_RAIZ
+h = h.replace(
+    "import { CATEGORIAS, getCategoriaIcon } from '../../lib/menuConfig'",
+    "import { CATEGORIAS, buildCategorias, getCategoriaIcon, Categoria } from '../../lib/menuConfig'"
+)
+
+# Adiciona estado de categorias dinâmicas e fetch
+if 'categoriasMenu' not in h:
+    h = h.replace(
+        "  const [megaAberto, setMegaAberto] = useState<string | null>(null)",
+        """  const [categoriasMenu, setCategoriasMenu] = useState<Categoria[]>(CATEGORIAS)
+  const [megaAberto, setMegaAberto] = useState<string | null>(null)"""
+    )
+
+    # Adiciona fetch de categorias no useEffect do freteGratis
+    h = h.replace(
+        """  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => { if (d.data?.frete_gratis_acima) setFreteGratis(Number(d.data.frete_gratis_acima)) })
+      .catch(() => {})
+  }, [])""",
+        """  useEffect(() => {
+    fetch('/api/site-config', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(d => { if (d.data?.frete_gratis_acima) setFreteGratis(Number(d.data.frete_gratis_acima)) })
+      .catch(() => {})
+    fetch('/api/categorias-loja')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setCategoriasMenu(buildCategorias(d.data)) })
+      .catch(() => {})
+  }, [])"""
+    )
+
+    # Substitui CATEGORIAS por categoriasMenu nos maps do Header
+    h = h.replace(
+        "              {CATEGORIAS.map(cat => (",
+        "              {categoriasMenu.map(cat => ("
+    )
+    h = h.replace(
+        "            {CATEGORIAS.map(cat => (",
+        "            {categoriasMenu.map(cat => ("
+    )
+    print('OK: Header atualizado para buscar categorias do banco')
+else:
+    print('OK: Header ja tem categoriasMenu')
+
+with open(header_path, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(h)
+
+print()
+print('Rode agora:')
+print('  git add .')
+print('  git commit -m "Header: categorias dinamicas do banco"')
+print('  git push')

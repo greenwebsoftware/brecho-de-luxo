@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { Search, Menu, X, Heart, User, ChevronDown } from 'lucide-react'
 import { useCarrinho } from '../../lib/carrinhoContext'
-import { CATEGORIAS, getCategoriaIcon } from '../../lib/menuConfig'
+import { CATEGORIAS, buildCategorias, getCategoriaIcon, Categoria } from '../../lib/menuConfig'
 
 // Icone de sacola estilizada
 function SacolaIcon({ className }: { className?: string }) {
@@ -39,6 +39,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false)
   const [buscaAberta, setBuscaAberta] = useState(false)
   const [busca, setBusca] = useState('')
+  const [categoriasMenu, setCategoriasMenu] = useState<Categoria[]>(CATEGORIAS)
   const [megaAberto, setMegaAberto] = useState<string | null>(null)
   const [mobileSubAberto, setMobileSubAberto] = useState<string | null>(null)
   const { totalItens } = useCarrinho()
@@ -48,6 +49,10 @@ export default function Header() {
     fetch('/api/site-config', { cache: 'no-store' })
       .then(r => r.json())
       .then(d => { if (d.data?.frete_gratis_acima) setFreteGratis(Number(d.data.frete_gratis_acima)) })
+      .catch(() => {})
+    fetch('/api/categorias-loja')
+      .then(r => r.json())
+      .then(d => { if (d.data?.length) setCategoriasMenu(buildCategorias(d.data)) })
       .catch(() => {})
   }, [])
 
@@ -101,7 +106,7 @@ export default function Header() {
                 Loja
               </Link>
 
-              {CATEGORIAS.map(cat => (
+              {categoriasMenu.map(cat => (
                 <div key={cat.slug}
                   className="relative h-full flex items-center"
                   onMouseEnter={() => abrirMega(cat.slug)}
@@ -260,7 +265,7 @@ export default function Header() {
               Loja — Tudo
             </Link>
 
-            {CATEGORIAS.map(cat => (
+            {categoriasMenu.map(cat => (
               <div key={cat.slug} className="border-b border-gray-50">
                 <button
                   onClick={() => setMobileSubAberto(mobileSubAberto === cat.slug ? null : cat.slug)}
