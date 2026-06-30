@@ -30,7 +30,7 @@ function verificarConteudo(texto: string): { status: string; motivo?: string } {
     return { status: 'suspeito', motivo: 'Texto em maiúsculas excessivas' }
   }
 
-  return { status: 'aprovado' }
+  return { status: 'pendente' }
 }
 
 export async function GET(req: NextRequest) {
