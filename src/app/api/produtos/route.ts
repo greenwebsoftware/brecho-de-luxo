@@ -7,18 +7,19 @@ export async function GET(req: NextRequest) {
   const supabase = createServerClient()
   const { searchParams } = new URL(req.url)
 
-  const busca       = searchParams.get('busca') || ''
-  const cat         = searchParams.get('cat') || ''
+  const busca        = searchParams.get('busca') || ''
+  const cat          = searchParams.get('cat') || ''
   const subcategoria = searchParams.get('subcategoria') || ''
-  const marca       = searchParams.get('marca') || ''
-  const destaque    = searchParams.get('destaque') || ''
-  const limit       = parseInt(searchParams.get('limit') || '20')
-  const page        = parseInt(searchParams.get('page') || '1')
-  const offset      = (page - 1) * limit
+  const genero       = searchParams.get('genero') || ''
+  const marca        = searchParams.get('marca') || ''
+  const destaque     = searchParams.get('destaque') || ''
+  const limit        = parseInt(searchParams.get('limit') || '20')
+  const page         = parseInt(searchParams.get('page') || '1')
+  const offset       = (page - 1) * limit
 
   let query = supabase
     .from('produtos_online')
-    .select('id, nome, preco, preco_promocional, fotos, estoque, destaque, subcategoria, marca, categoria, tamanhos, cores', { count: 'exact' })
+    .select('id, nome, preco, preco_promocional, fotos, estoque, destaque, subcategoria, genero, marca, categoria, tamanhos, cores', { count: 'exact' })
     .eq('visivel', true)
     .gt('estoque', 0)
     .order('criado_em', { ascending: false })
@@ -26,6 +27,7 @@ export async function GET(req: NextRequest) {
 
   if (busca)        query = query.ilike('nome', `%${busca}%`)
   if (cat)          query = query.eq('categoria', cat)
+  if (genero)       query = query.eq('genero', genero)
   if (subcategoria) query = query.eq('subcategoria', subcategoria)
   if (marca)        query = query.eq('marca', marca)
   if (destaque)     query = query.eq('destaque', true)
@@ -34,7 +36,6 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-  // Normaliza retorno para compatibilidade com o frontend existente
   const produtos = (data || []).map((p: any) => ({
     id:                p.id,
     nome:              p.nome,
@@ -45,6 +46,7 @@ export async function GET(req: NextRequest) {
     estoque_atual:     p.estoque,
     destaque:          p.destaque,
     subcategoria:      p.subcategoria,
+    genero:            p.genero,
     marca:             p.marca,
     categoria:         p.categoria,
     tamanhos:          p.tamanhos,

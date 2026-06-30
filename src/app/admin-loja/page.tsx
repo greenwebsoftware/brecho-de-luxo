@@ -12,7 +12,7 @@ import { CATEGORIAS } from '../../lib/menuConfig'
 
 // ---- TIPOS ----
 interface Produto { id: string; nome: string; preco_venda: number; estoque_atual: number; visivel_site: boolean; destaque: boolean; imagem_url?: string; imagens_site?: string[]; publicado_loja?: boolean }
-interface ProdutoOnline { id: string; nome: string; preco: number; preco_promocional?: number; estoque: number; categoria?: string; subcategoria?: string; marca?: string; tamanhos: string[]; cores: string[]; fotos: string[]; peso: number; visivel: boolean; destaque: boolean; descricao?: string }
+interface ProdutoOnline { id: string; nome: string; preco: number; preco_promocional?: number; estoque: number; categoria?: string; subcategoria?: string; genero?: string; marca?: string; tamanhos: string[]; cores: string[]; fotos: string[]; peso: number; visivel: boolean; destaque: boolean; descricao?: string }
 interface Pedido { id: string; numero: number; cliente_nome: string; total: number; status: string; criado_em: string; integrado_modasystem: boolean }
 interface SiteConfig { whatsapp?: string; instagram?: string; facebook?: string; tiktok?: string; email_contato?: string; frete_gratis_acima?: number; frete_fixo?: number; cep_origem?: string; melhor_envio_token?: string }
 interface BlogPost { id: string; titulo: string; slug: string; resumo?: string; conteudo: string; imagem_capa?: string; video_url?: string; tags: string[]; publicado: boolean; destaque: boolean; visualizacoes: number; curtidas: number; criado_em: string }
@@ -745,13 +745,13 @@ export default function AdminLojaPage() {
                   </div>
                 )}
 
-                {/* Roupas e Calcados: dropdown de genero + subcategoria */}
+                {/* Roupas e Calcados: dropdown de genero + subcategoria separados */}
                 {(catSelecionada === 'roupas' || catSelecionada === 'calcados') && (
                   <>
                     <div>
                       <label className="text-xs font-medium text-gray-500 mb-1 block">Gênero</label>
-                      <select value={formOnline.subcategoria?.split('|')[0] || ''} onChange={e => {
-                        setFormOnline({ ...formOnline, subcategoria: e.target.value + '|' })
+                      <select value={formOnline.genero || ''} onChange={e => {
+                        setFormOnline({ ...formOnline, genero: e.target.value, subcategoria: '' })
                       }} className="input-luxo">
                         <option value="">Selecione o gênero...</option>
                         {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos?.map(grupo => (
@@ -759,16 +759,15 @@ export default function AdminLojaPage() {
                         ))}
                       </select>
                     </div>
-                    {formOnline.subcategoria?.split('|')[0] && (
+                    {formOnline.genero && (
                       <div>
                         <label className="text-xs font-medium text-gray-500 mb-1 block">Tipo</label>
-                        <select value={formOnline.subcategoria?.split('|')[1] || ''} onChange={e => {
-                          const genero = formOnline.subcategoria?.split('|')[0] || ''
-                          setFormOnline({ ...formOnline, subcategoria: genero + '|' + e.target.value })
+                        <select value={formOnline.subcategoria || ''} onChange={e => {
+                          setFormOnline({ ...formOnline, subcategoria: e.target.value })
                         }} className="input-luxo">
                           <option value="">Selecione o tipo...</option>
                           {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos
-                            ?.find(g => g.slug === formOnline.subcategoria?.split('|')[0])
+                            ?.find(g => g.slug === formOnline.genero)
                             ?.itens?.map(item => (
                               <option key={item.slug} value={item.slug}>{item.label}</option>
                             ))}
