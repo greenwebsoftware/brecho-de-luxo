@@ -1,4 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
+fp = os.path.join(base, 'src', 'app', 'api', 'produtos', 'route.ts')
+
+novo = '''import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '../../../lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
@@ -58,3 +63,15 @@ export async function GET(req: NextRequest) {
     pages: Math.ceil((count || 0) / limit),
   })
 }
+'''
+
+os.makedirs(os.path.dirname(fp), exist_ok=True)
+with open(fp, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(novo)
+
+print('OK: src/app/api/produtos/route.ts corrigido para usar produtos_online')
+print()
+print('Rode agora:')
+print('  git add .')
+print('  git commit -m "Fix API produtos - usa tabela produtos_online"')
+print('  git push')
