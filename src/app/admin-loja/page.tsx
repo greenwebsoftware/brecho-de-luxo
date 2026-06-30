@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import GeradorConteudo from '../../components/GeradorConteudo'
+import { CATEGORIAS } from '../../lib/menuConfig'
 
 // ---- TIPOS ----
 interface Produto { id: string; nome: string; preco_venda: number; estoque_atual: number; visivel_site: boolean; destaque: boolean; imagem_url?: string; imagens_site?: string[]; publicado_loja?: boolean }
@@ -61,6 +62,7 @@ export default function AdminLojaPage() {
   const [editandoOnline, setEditandoOnline] = useState<ProdutoOnline | null>(null)
   const [formOnline, setFormOnline] = useState<Partial<ProdutoOnline>>({ fotos: [], tamanhos: [], cores: [], visivel: true, destaque: false, peso: 0.3 })
   const [novaFoto, setNovaFoto] = useState('')
+  const [catSelecionada, setCatSelecionada] = useState('')
   const [novoTamanho, setNovoTamanho] = useState('')
   const [novaCor, setNovaCor] = useState('')
   const [uploadingFoto, setUploadingFoto] = useState(false)
@@ -158,8 +160,8 @@ export default function AdminLojaPage() {
   }
 
   // ---- PRODUTOS ONLINE ----
-  const abrirModalNovo = () => { setEditandoOnline(null); setFormOnline({ fotos: [], tamanhos: [], cores: [], visivel: true, destaque: false, peso: 0.3 }); setModalOnline(true) }
-  const abrirModalEditar = (p: ProdutoOnline) => { setEditandoOnline(p); setFormOnline({ ...p }); setModalOnline(true) }
+  const abrirModalNovo = () => { setEditandoOnline(null); setFormOnline({ fotos: [], tamanhos: [], cores: [], visivel: true, destaque: false, peso: 0.3 }); setCatSelecionada(''); setModalOnline(true) }
+  const abrirModalEditar = (p: ProdutoOnline) => { setEditandoOnline(p); setFormOnline({ ...p }); setCatSelecionada(p.categoria || ''); setModalOnline(true) }
 
   const uploadFoto = async (file: File) => {
     setUploadingFoto(true)
@@ -719,17 +721,75 @@ export default function AdminLojaPage() {
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Estoque</label>
                   <input type="number" value={formOnline.estoque || 0} onChange={e => setFormOnline({ ...formOnline, estoque: Number(e.target.value) })} className="input-luxo" />
                 </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Marca</label>
-                  <input value={formOnline.marca || ''} onChange={e => setFormOnline({ ...formOnline, marca: e.target.value })} className="input-luxo" />
-                </div>
-                <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block">Categoria</label>
-                  <select value={formOnline.categoria || ''} onChange={e => setFormOnline({ ...formOnline, categoria: e.target.value })} className="input-luxo">
-                    <option value="">Selecione...</option>
-                    {CATEGORIAS_OPTS.map(c => <option key={c} value={c.toLowerCase()}>{c}</option>)}
+                <div className="col-span-2">
+                  <label className="text-xs font-medium text-gray-500 mb-1 block">Categoria *</label>
+                  <select value={catSelecionada} onChange={e => {
+                    setCatSelecionada(e.target.value)
+                    setFormOnline({ ...formOnline, categoria: e.target.value, subcategoria: '', marca: '' })
+                  }} className="input-luxo">
+                    <option value="">Selecione a categoria...</option>
+                    {CATEGORIAS.map(cat => <option key={cat.slug} value={cat.slug}>{cat.label}</option>)}
                   </select>
                 </div>
+
+                {/* Bolsas: dropdown de marca */}
+                {catSelecionada === 'bolsas' && (
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Marca</label>
+                    <select value={formOnline.marca || ''} onChange={e => setFormOnline({ ...formOnline, marca: e.target.value })} className="input-luxo">
+                      <option value="">Selecione a marca...</option>
+                      {CATEGORIAS.find(c => c.slug === 'bolsas')?.itens?.map(item => (
+                        <option key={item.slug} value={item.slug}>{item.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {/* Roupas e Calcados: dropdown de genero + subcategoria */}
+                {(catSelecionada === 'roupas' || catSelecionada === 'calcados') && (
+                  <>
+                    <div>
+                      <label className="text-xs font-medium text-gray-500 mb-1 block">Gênero</label>
+                      <select value={formOnline.subcategoria?.split('|')[0] || ''} onChange={e => {
+                        setFormOnline({ ...formOnline, subcategoria: e.target.value + '|' })
+                      }} className="input-luxo">
+                        <option value="">Selecione o gênero...</option>
+                        {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos?.map(grupo => (
+                          <option key={grupo.slug} value={grupo.slug}>{grupo.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {formOnline.subcategoria?.split('|')[0] && (
+                      <div>
+                        <label className="text-xs font-medium text-gray-500 mb-1 block">Tipo</label>
+                        <select value={formOnline.subcategoria?.split('|')[1] || ''} onChange={e => {
+                          const genero = formOnline.subcategoria?.split('|')[0] || ''
+                          setFormOnline({ ...formOnline, subcategoria: genero + '|' + e.target.value })
+                        }} className="input-luxo">
+                          <option value="">Selecione o tipo...</option>
+                          {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos
+                            ?.find(g => g.slug === formOnline.subcategoria?.split('|')[0])
+                            ?.itens?.map(item => (
+                              <option key={item.slug} value={item.slug}>{item.label}</option>
+                            ))}
+                        </select>
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Acessorios: dropdown de subcategoria direta */}
+                {catSelecionada === 'acessorios' && (
+                  <div className="col-span-2">
+                    <label className="text-xs font-medium text-gray-500 mb-1 block">Subcategoria</label>
+                    <select value={formOnline.subcategoria || ''} onChange={e => setFormOnline({ ...formOnline, subcategoria: e.target.value })} className="input-luxo">
+                      <option value="">Selecione...</option>
+                      {CATEGORIAS.find(c => c.slug === 'acessorios')?.itens?.map(item => (
+                        <option key={item.slug} value={item.slug}>{item.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Peso (kg)</label>
                   <input type="number" step="0.1" value={formOnline.peso || 0.3} onChange={e => setFormOnline({ ...formOnline, peso: Number(e.target.value) })} className="input-luxo" />
