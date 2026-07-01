@@ -17,7 +17,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const supabase = createServerClient()
   const body = await req.json()
-  const { label, slug, tipo, pai_slug, ordem } = body
+  const { label, slug, tipo, pai_slug, ordem, icone } = body
 
   if (!label || !slug || !tipo) {
     return NextResponse.json({ error: 'label, slug e tipo sao obrigatorios' }, { status: 400 })
@@ -25,7 +25,31 @@ export async function POST(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('categorias_loja')
-    .insert({ label, slug, tipo, pai_slug: pai_slug || null, ordem: ordem || 0 })
+    .insert({ label, slug, tipo, pai_slug: pai_slug || null, ordem: ordem || 0, icone: icone || null })
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+  return NextResponse.json({ data })
+}
+
+export async function PATCH(req: NextRequest) {
+  const supabase = createServerClient()
+  const body = await req.json()
+  const { id, label, slug, icone } = body
+
+  if (!id || !label) {
+    return NextResponse.json({ error: 'id e label sao obrigatorios' }, { status: 400 })
+  }
+
+  const updates: any = { label }
+  if (slug) updates.slug = slug
+  if (icone !== undefined) updates.icone = icone
+
+  const { data, error } = await supabase
+    .from('categorias_loja')
+    .update(updates)
+    .eq('id', id)
     .select()
     .single()
 

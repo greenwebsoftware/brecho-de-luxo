@@ -59,6 +59,8 @@ export default function AdminLojaPage() {
   const [categoriasLoja, setCategoriasLoja] = useState<CategoriaLoja[]>([])
   const [formCat, setFormCat] = useState({ label: '', slug: '', tipo: 'item', pai_slug: '' })
   const [salvandoCat, setSalvandoCat] = useState(false)
+  const [editandoCat, setEditandoCat] = useState<{id: string; label: string; slug: string} | null>(null)
+  const [salvandoRenomear, setSalvandoRenomear] = useState(false)
   const [dadosRelatorio, setDadosRelatorio] = useState<any>(null)
   const [periodoRelatorio, setPeriodoRelatorio] = useState('30')
   const [loadingRelatorio, setLoadingRelatorio] = useState(false)
@@ -338,6 +340,25 @@ export default function AdminLojaPage() {
       toast.error(err.error || 'Erro ao salvar')
     }
     setSalvandoCat(false)
+  }
+
+  const renomearCategoria = async () => {
+    if (!editandoCat) return
+    setSalvandoRenomear(true)
+    const res = await fetch('/api/categorias-loja', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: editandoCat.id, label: editandoCat.label, slug: editandoCat.slug })
+    })
+    if (res.ok) {
+      toast.success('Categoria renomeada!')
+      setEditandoCat(null)
+      carregarDados()
+    } else {
+      const err = await res.json()
+      toast.error(err.error || 'Erro ao renomear')
+    }
+    setSalvandoRenomear(false)
   }
 
   const excluirCategoria = async (id: string) => {
@@ -919,8 +940,8 @@ export default function AdminLojaPage() {
             </div>
 
             {/* Lista por categoria raiz */}
-            {['roupas', 'bolsas', 'calcados', 'acessorios'].map(catSlug => {
-              const catRaiz = categoriasLoja.find(c => c.slug === catSlug)
+            {/* Categorias raiz dinamicas do banco */}
+            {categoriasLoja.filter(c => !c.pai_slug && c.tipo !== 'item' && c.tipo !== 'grupo').sort((a, b) => a.ordem - b.ordem).map(catRaiz => { const catSlug = catRaiz.slug; return (
               if (!catRaiz) return null
               const grupos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'grupo')
               const itensDirectos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'item')
@@ -1366,6 +1387,37 @@ export default function AdminLojaPage() {
           </div>
         </div>
       )}
+
+      {/* MODAL RENOMEAR CATEGORIA */}
+      {editandoCat && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm">
+            <h3 className="font-semibold text-gray-800 mb-4">Renomear Categoria</h3>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Nome</label>
+                <input value={editandoCat.label}
+                  onChange={e => setEditandoCat({ ...editandoCat, label: e.target.value })}
+                  className="input-luxo" placeholder="Nome da categoria" />
+              </div>
+              <div>
+                <label className="text-xs font-medium text-gray-500 mb-1 block">Slug (URL)</label>
+                <input value={editandoCat.slug}
+                  onChange={e => setEditandoCat({ ...editandoCat, slug: e.target.value })}
+                  className="input-luxo" placeholder="slug-da-categoria" />
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button onClick={() => setEditandoCat(null)} className="flex-1 btn-outline justify-center">Cancelar</button>
+              <button onClick={renomearCategoria} disabled={salvandoRenomear} className="flex-1 btn-gold justify-center disabled:opacity-50">
+                {salvandoRenomear ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                Salvar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL GERADOR DE CONTEUDO */}
       {(geradorProduto || geradorPost) && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
