@@ -1,4 +1,10 @@
-import { NextResponse } from 'next/server'
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
+fp = os.path.join(base, 'src', 'app', 'api', 'admin', 'produtos', 'route.ts')
+
+# Conteudo correto e definitivo
+CONTEUDO_CORRETO = '''import { NextResponse } from 'next/server'
 import { createServerClient } from '../../../../lib/supabase-server'
 
 export const dynamic = 'force-dynamic'
@@ -31,3 +37,21 @@ export async function GET() {
 
   return NextResponse.json({ data: normalizado })
 }
+'''
+
+# Verifica se já está correto
+with open(fp, 'r', encoding='utf-8') as f:
+    atual = f.read()
+
+if 'produtos_online' in atual and 'VERSAO DEFINITIVA' in atual:
+    print('OK: arquivo já está na versão definitiva, nenhuma alteração necessária')
+else:
+    with open(fp, 'w', encoding='utf-8', newline='\n') as f:
+        f.write(CONTEUDO_CORRETO)
+    print('OK: API admin/produtos fixada na versão definitiva')
+
+print()
+print('Rode agora:')
+print('  git add .')
+print('  git commit -m "Fix definitivo: Estoque-site sempre usa produtos_online"')
+print('  git push')
