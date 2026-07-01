@@ -941,8 +941,8 @@ export default function AdminLojaPage() {
 
             {/* Lista por categoria raiz */}
             {/* Categorias raiz dinamicas do banco */}
-            {categoriasLoja.filter(c => !c.pai_slug && c.tipo !== 'item' && c.tipo !== 'grupo').sort((a, b) => a.ordem - b.ordem).map(catRaiz => { const catSlug = catRaiz.slug; return (
-              if (!catRaiz) return null
+            {categoriasLoja.filter(c => !c.pai_slug && c.tipo !== 'item' && c.tipo !== 'grupo').sort((a, b) => a.ordem - b.ordem).map(catRaiz => {
+              const catSlug = catRaiz.slug;
               const grupos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'grupo')
               const itensDirectos = categoriasLoja.filter(c => c.pai_slug === catSlug && c.tipo === 'item')
 
