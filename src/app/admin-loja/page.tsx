@@ -89,6 +89,8 @@ export default function AdminLojaPage() {
   const [formBlog, setFormBlog] = useState({ titulo: '', resumo: '', conteudo: '', imagem_capa: '', video_url: '', tags: [] as string[], publicado: false, destaque: false })
   const [novaTag, setNovaTag] = useState('')
   const [salvandoBlog, setSalvandoBlog] = useState(false)
+  const [uploadingBlogImg, setUploadingBlogImg] = useState(false)
+  const blogImgRef = useRef<HTMLInputElement>(null)
   const [geradorProduto, setGeradorProduto] = useState<Produto | ProdutoOnline | null>(null)
   const [geradorPost, setGeradorPost] = useState<BlogPost | null>(null)
 
@@ -215,6 +217,25 @@ export default function AdminLojaPage() {
     setEditandoBlog(p)
     setFormBlog({ titulo: p.titulo, resumo: p.resumo || '', conteudo: p.conteudo, imagem_capa: p.imagem_capa || '', video_url: p.video_url || '', tags: p.tags || [], publicado: p.publicado, destaque: p.destaque })
     setModalBlog(true)
+  }
+
+  const uploadBlogImg = async (file: File) => {
+    setUploadingBlogImg(true)
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await fetch('/api/admin/upload-blog', { method: 'POST', body: fd })
+      const data = await res.json()
+      if (data.url) {
+        setFormBlog(prev => ({ ...prev, imagem_capa: data.url }))
+        toast.success('Imagem enviada!')
+      } else {
+        toast.error(data.error || 'Erro ao enviar imagem')
+      }
+    } catch {
+      toast.error('Erro ao enviar imagem')
+    }
+    setUploadingBlogImg(false)
   }
 
   const salvarBlog = async () => {
@@ -1233,8 +1254,17 @@ export default function AdminLojaPage() {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1"><ImageIcon className="w-3.5 h-3.5" /> Imagem Capa (URL)</label>
-                  <input value={formBlog.imagem_capa} onChange={e => setFormBlog({ ...formBlog, imagem_capa: e.target.value })} className="input-luxo" placeholder="https://..." />
+                  <label className="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1"><ImageIcon className="w-3.5 h-3.5" /> Imagem Capa</label>
+                  <input value={formBlog.imagem_capa} onChange={e => setFormBlog({ ...formBlog, imagem_capa: e.target.value })} className="input-luxo mb-2" placeholder="Cole uma URL ou faça upload abaixo..." />
+                  <input ref={blogImgRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) uploadBlogImg(e.target.files[0]) }} />
+                  <button type="button" onClick={() => blogImgRef.current?.click()} disabled={uploadingBlogImg}
+                    className="flex items-center gap-2 px-4 py-2 border border-dashed border-gray-300 rounded-xl text-sm text-gray-500 hover:border-gold-400 disabled:opacity-50">
+                    {uploadingBlogImg ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+                    {uploadingBlogImg ? 'Enviando...' : 'Upload do computador'}
+                  </button>
+                  {formBlog.imagem_capa && (
+                    <img src={formBlog.imagem_capa} alt="Preview" className="mt-2 w-full h-32 object-cover rounded-xl" />
+                  )}
                 </div>
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block flex items-center gap-1"><Video className="w-3.5 h-3.5" /> Vídeo (YouTube/Vimeo URL)</label>
