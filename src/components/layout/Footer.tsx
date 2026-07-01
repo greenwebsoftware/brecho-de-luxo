@@ -44,7 +44,7 @@ export default function Footer() {
         <div className="max-w-7xl mx-auto px-4 py-10 flex flex-col md:flex-row items-center justify-between gap-6">
           <div>
             <h3 className="font-serif text-white text-xl font-bold">Fique por dentro das novidades</h3>
-            <p className="text-gold-100 text-sm mt-1">Receba em primeira mão as novas chegadas e ofertas exclusivas</p>
+            <p className="text-gold-100 text-sm mt-1">Receba em primeira mão as novidades e ofertas exclusivas</p>
           </div>
           <form onSubmit={handleNewsletter} className="flex gap-2 w-full md:w-auto">
             <input
