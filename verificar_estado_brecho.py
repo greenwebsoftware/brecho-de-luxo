@@ -58,7 +58,7 @@ checar(
 checar(
     "JSON-LD Schema.org com offers",
     "src/app/loja/[id]/page.tsx",
-    "'offers'"
+    "offers"
 )
 
 # ── Comentarios ficam pendentes ───────────────────────────────
