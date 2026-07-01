@@ -1,4 +1,9 @@
-import { notFound } from 'next/navigation'
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
+fp = os.path.join(base, 'src', 'app', 'loja', '[id]', 'page.tsx')
+
+novo = r'''import { notFound } from 'next/navigation'
 import { createServerClient } from '../../../lib/supabase-server'
 import ProdutoDetalhes from '../../../components/loja/ProdutoDetalhes'
 
@@ -99,3 +104,18 @@ export default async function ProdutoPage({ params }: { params: Promise<{ id: st
     </>
   )
 }
+'''
+
+os.makedirs(os.path.dirname(fp), exist_ok=True)
+with open(fp, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(novo)
+
+print('OK: pagina de produto corrigida')
+print('  - Busca da tabela produtos_online')
+print('  - JSON-LD Schema.org com offers (corrige erro Google)')
+print('  - generateMetadata para SEO')
+print()
+print('Rode agora:')
+print('  git add .')
+print('  git commit -m "Fix: pagina produto usa produtos_online + JSON-LD Schema.org"')
+print('  git push')
