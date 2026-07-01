@@ -384,7 +384,7 @@ export default function AdminLojaPage() {
     totalPedidos: pedidos.length,
     pedidosPendentes: pedidos.filter(p => p.status === 'aguardando_pagamento').length,
     totalVendido: pedidos.filter(p => p.status !== 'cancelado').reduce((s, p) => s + p.total, 0),
-    produtosVisiveis: produtos.filter(p => p.visivel_site).length + produtosOnline.filter(p => p.visivel).length,
+    produtosVisiveis: produtosOnline.filter(p => p.visivel).length,
   }
 
   // ---- TELAS DE AUTH ----
@@ -950,7 +950,15 @@ export default function AdminLojaPage() {
                 <div key={catSlug} className="bg-white rounded-2xl shadow-sm overflow-hidden">
                   <div className="bg-luxo-900 px-6 py-3 flex items-center justify-between">
                     <h3 className="text-white font-semibold">{catRaiz.label}</h3>
-                    <span className="text-gold-300 text-xs">{catRaiz.tipo}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gold-300 text-xs">{catRaiz.tipo}</span>
+                      <button onClick={() => setEditandoCat({ id: catRaiz.id, label: catRaiz.label, slug: catRaiz.slug })} className="text-gold-300 hover:text-white" title="Renomear">
+                        <Edit className="w-3.5 h-3.5" />
+                      </button>
+                      <button onClick={() => excluirCategoria(catRaiz.id)} className="text-red-400 hover:text-red-300" title="Excluir categoria raiz">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </div>
 
                   {grupos.length > 0 ? (
