@@ -918,9 +918,11 @@ export default function AdminLojaPage() {
                 <div>
                   <label className="text-xs font-medium text-gray-500 mb-1 block">Tipo</label>
                   <select value={formCat.tipo} onChange={e => setFormCat({ ...formCat, tipo: e.target.value })} className="input-luxo">
-                    <option value="item">Item (subcategoria/marca)</option>
-                    <option value="grupo">Grupo (ex: Feminino)</option>
-                    <option value="subcategoria">Categoria raiz</option>
+                    <option value="item">Item — marca, subcategoria ou tipo de produto</option>
+                    <option value="grupo">Grupo — divisão por gênero (Feminino, Masculino...)</option>
+                    <option value="genero">Categoria raiz com grupos (ex: Roupas, Calçados)</option>
+                    <option value="marca">Categoria raiz por marca (ex: Bolsas)</option>
+                    <option value="subcategoria">Categoria raiz simples (ex: Acessórios)</option>
                   </select>
                 </div>
                 <div>
