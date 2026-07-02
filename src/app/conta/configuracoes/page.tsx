@@ -131,7 +131,7 @@ export default function ConfiguracoesPage() {
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-300" />
                     <input value={usuario?.email || ''} disabled
-                      className="input-luxo pl-10 bg-gray-50 text-gray-400 cursor-not-allowed" />
+                      className="input-luxo-icon bg-gray-50 text-gray-400 cursor-not-allowed" />
                   </div>
                 </div>
                 <div>
@@ -139,7 +139,7 @@ export default function ConfiguracoesPage() {
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input value={telefone} onChange={e => setTelefone(e.target.value)}
-                      className="input-luxo pl-10" placeholder="(11) 9-0000-0000" />
+                      className="input-luxo-icon" placeholder="(11) 9-0000-0000" />
                   </div>
                 </div>
               </div>
@@ -196,7 +196,7 @@ export default function ConfiguracoesPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type={mostrarSenha ? 'text' : 'password'} value={novaSenha}
                     onChange={e => setNovaSenha(e.target.value)}
-                    className="input-luxo pl-10" placeholder="Mín. 6 caracteres" />
+                    className="input-luxo-icon" placeholder="Mín. 6 caracteres" />
                 </div>
               </div>
               <div>
@@ -205,7 +205,7 @@ export default function ConfiguracoesPage() {
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                   <input type={mostrarSenha ? 'text' : 'password'} value={confirmarSenha}
                     onChange={e => setConfirmarSenha(e.target.value)}
-                    className="input-luxo pl-10" placeholder="Repita a senha" />
+                    className="input-luxo-icon" placeholder="Repita a senha" />
                   <button type="button" onClick={() => setMostrarSenha(!mostrarSenha)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                     {mostrarSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
