@@ -1119,7 +1119,6 @@ export default function AdminLojaPage() {
                       </div>
                     ))}
                   </div>
-                  </>
                 )}
               </div>
             </div>
@@ -1279,6 +1278,7 @@ export default function AdminLojaPage() {
                 </div>
                 {(formOnline.fotos || []).length > 0 && (
                   <>
+                  <div>
                   <p className="text-xs text-gray-400 mb-1">Arraste para reordenar. A primeira é a principal.</p>
                   <div className="grid grid-cols-4 gap-2">
                     {(formOnline.fotos || []).map((f, i) => (
@@ -1295,7 +1295,7 @@ export default function AdminLojaPage() {
                       </div>
                     ))}
                   </div>
-                  </>
+                  </div>
                 )}
               </div>
               <div className="flex gap-6">
