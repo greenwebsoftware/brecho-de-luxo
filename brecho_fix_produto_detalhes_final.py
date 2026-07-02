@@ -1,4 +1,9 @@
-'use client'
+import os
+
+base = os.path.dirname(os.path.abspath(__file__))
+fp = os.path.join(base, 'src', 'components', 'loja', 'ProdutoDetalhes.tsx')
+
+conteudo = r"""'use client'
 import { useState } from 'react'
 import Link from 'next/link'
 import { ShoppingBag, Heart, ArrowLeft, Shield, Truck, RefreshCw, Star } from 'lucide-react'
@@ -266,3 +271,14 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
     </>
   )
 }
+"""
+
+with open(fp, 'w', encoding='utf-8', newline='\n') as f:
+    f.write(conteudo)
+
+print('OK: ProdutoDetalhes.tsx reescrito com zoom e lightbox corretos')
+print()
+print('Rode agora:')
+print('  git add .')
+print('  git commit -m "Feat: zoom flutuante e lightbox na pagina do produto"')
+print('  git push')
