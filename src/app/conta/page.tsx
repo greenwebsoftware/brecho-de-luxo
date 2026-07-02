@@ -301,7 +301,7 @@ export default function ContaPage() {
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)}
-                        className="input-luxo-icon" placeholder="seu@email.com" autoFocus />
+                        className="input-luxo pl-10" placeholder="seu@email.com" autoFocus />
                     </div>
                   </div>
                   <div>
@@ -310,7 +310,7 @@ export default function ContaPage() {
                       <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input type={mostrarSenha ? 'text' : 'password'} value={loginSenha}
                         onChange={e => setLoginSenha(e.target.value)}
-                        className="input-luxo-icon pr-10" placeholder="Sua senha" />
+                        className="input-luxo pl-10 pr-10" placeholder="Sua senha" />
                       <button type="button" onClick={() => setMostrarSenha(!mostrarSenha)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         {mostrarSenha ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -339,7 +339,7 @@ export default function ContaPage() {
                     <div className="relative">
                       <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input value={nome} onChange={e => setNome(e.target.value)}
-                        className="input-luxo-icon" placeholder="Seu nome completo" />
+                        className="input-luxo pl-10" placeholder="Seu nome completo" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-3">
@@ -348,7 +348,7 @@ export default function ContaPage() {
                       <div className="relative">
                         <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input value={cpf} onChange={e => setCpf(formatarCPF(e.target.value))}
-                          className="input-luxo-icon" placeholder="000.000.000-00" maxLength={14} />
+                          className="input-luxo pl-10" placeholder="000.000.000-00" maxLength={14} />
                       </div>
                     </div>
                     <div>
@@ -356,7 +356,7 @@ export default function ContaPage() {
                       <div className="relative">
                         <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input type="date" value={dataNascimento} onChange={e => setDataNascimento(e.target.value)}
-                          className="input-luxo-icon" />
+                          className="input-luxo pl-10" />
                       </div>
                     </div>
                     <div>
@@ -364,7 +364,7 @@ export default function ContaPage() {
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input type="email" value={email} onChange={e => setEmail(e.target.value)}
-                          className="input-luxo-icon" placeholder="seu@email.com" />
+                          className="input-luxo pl-10" placeholder="seu@email.com" />
                       </div>
                     </div>
                     <div>
@@ -372,7 +372,7 @@ export default function ContaPage() {
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input value={telefone} onChange={e => setTelefone(formatarTelefone(e.target.value))}
-                          className="input-luxo-icon" placeholder="(11) 9-0000-0000" />
+                          className="input-luxo pl-10" placeholder="(11) 9-0000-0000" />
                       </div>
                     </div>
                     <div>
@@ -381,7 +381,7 @@ export default function ContaPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input type={mostrarSenha ? 'text' : 'password'} value={senha}
                           onChange={e => setSenha(e.target.value)}
-                          className="input-luxo-icon" placeholder="Mín. 6 caracteres" />
+                          className="input-luxo pl-10" placeholder="Mín. 6 caracteres" />
                       </div>
                     </div>
                     <div>
@@ -390,7 +390,7 @@ export default function ContaPage() {
                         <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input type={mostrarSenha ? 'text' : 'password'} value={confirmarSenha}
                           onChange={e => setConfirmarSenha(e.target.value)}
-                          className="input-luxo-icon" placeholder="Repita a senha" />
+                          className="input-luxo pl-10" placeholder="Repita a senha" />
                       </div>
                     </div>
                   </div>
@@ -409,7 +409,7 @@ export default function ContaPage() {
                       <div className="relative">
                         <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                         <input value={cep} onChange={e => { setCep(e.target.value); buscarCep(e.target.value) }}
-                          className="input-luxo-icon" placeholder="00000-000" maxLength={9} />
+                          className="input-luxo pl-10" placeholder="00000-000" maxLength={9} />
                       </div>
                     </div>
                     <div>
@@ -460,7 +460,7 @@ export default function ContaPage() {
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                       <input type="email" value={recuperarEmail} onChange={e => setRecuperarEmail(e.target.value)}
-                        className="input-luxo-icon" placeholder="seu@email.com" autoFocus />
+                        className="input-luxo pl-10" placeholder="seu@email.com" autoFocus />
                     </div>
                   </div>
                   <button type="submit" disabled={loading} className="btn-gold w-full justify-center disabled:opacity-50">
