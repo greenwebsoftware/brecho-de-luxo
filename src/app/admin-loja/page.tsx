@@ -1153,17 +1153,19 @@ export default function AdminLojaPage() {
                     setFormOnline({ ...formOnline, categoria: e.target.value, subcategoria: '', marca: '' })
                   }} className="input-luxo">
                     <option value="">Selecione a categoria...</option>
-                    {CATEGORIAS.map(cat => <option key={cat.slug} value={cat.slug}>{cat.label}</option>)}
+                    {categoriasLoja.filter(c => !c.pai_slug).sort((a,b) => a.ordem - b.ordem).map(cat => (
+                      <option key={cat.slug} value={cat.slug}>{cat.label}</option>
+                    ))}
                   </select>
                 </div>
 
                 {/* Bolsas: dropdown de marca */}
-                {catSelecionada === 'bolsas' && (
+                {catSelecionada && categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'item').length > 0 && categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'grupo').length === 0 && (
                   <div className="col-span-2">
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Marca</label>
                     <select value={formOnline.marca || ''} onChange={e => setFormOnline({ ...formOnline, marca: e.target.value })} className="input-luxo">
                       <option value="">Selecione a marca...</option>
-                      {CATEGORIAS.find(c => c.slug === 'bolsas')?.itens?.map(item => (
+                      {categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'item').map(item => (
                         <option key={item.slug} value={item.slug}>{item.label}</option>
                       ))}
                     </select>
@@ -1171,7 +1173,7 @@ export default function AdminLojaPage() {
                 )}
 
                 {/* Roupas e Calcados: dropdown de genero + subcategoria separados */}
-                {(catSelecionada === 'roupas' || catSelecionada === 'calcados') && (
+                {catSelecionada && categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'grupo').length > 0 && (
                   <>
                     <div>
                       <label className="text-xs font-medium text-gray-500 mb-1 block">Gênero</label>
@@ -1179,7 +1181,7 @@ export default function AdminLojaPage() {
                         setFormOnline({ ...formOnline, genero: e.target.value, subcategoria: '' })
                       }} className="input-luxo">
                         <option value="">Selecione o gênero...</option>
-                        {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos?.map(grupo => (
+                        {categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'grupo').map(grupo => (
                           <option key={grupo.slug} value={grupo.slug}>{grupo.label}</option>
                         ))}
                       </select>
@@ -1191,11 +1193,9 @@ export default function AdminLojaPage() {
                           setFormOnline({ ...formOnline, subcategoria: e.target.value })
                         }} className="input-luxo">
                           <option value="">Selecione o tipo...</option>
-                          {CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos
-                            ?.find(g => g.slug === formOnline.genero)
-                            ?.itens?.map(item => (
-                              <option key={item.slug} value={item.slug}>{item.label}</option>
-                            ))}
+                          {categoriasLoja.filter(c => c.pai_slug === formOnline.genero && c.tipo === 'item').map(item => (
+                            <option key={item.slug} value={item.slug}>{item.label}</option>
+                          ))}
                         </select>
                       </div>
                     )}
@@ -1203,12 +1203,12 @@ export default function AdminLojaPage() {
                 )}
 
                 {/* Acessorios: dropdown de subcategoria direta */}
-                {catSelecionada === 'acessorios' && (
+                {catSelecionada && categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'item').length > 0 && categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'grupo').length === 0 && false && (
                   <div className="col-span-2">
                     <label className="text-xs font-medium text-gray-500 mb-1 block">Subcategoria</label>
                     <select value={formOnline.subcategoria || ''} onChange={e => setFormOnline({ ...formOnline, subcategoria: e.target.value })} className="input-luxo">
                       <option value="">Selecione...</option>
-                      {CATEGORIAS.find(c => c.slug === 'acessorios')?.itens?.map(item => (
+                      {categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'item').map(item => (
                         <option key={item.slug} value={item.slug}>{item.label}</option>
                       ))}
                     </select>
