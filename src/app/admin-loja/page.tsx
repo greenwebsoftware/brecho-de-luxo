@@ -1277,10 +1277,17 @@ export default function AdminLojaPage() {
                   </button>
                 </div>
                 {(formOnline.fotos || []).length > 0 && (
+                  <p className="text-xs text-gray-400 mb-1">Arraste para reordenar. A primeira é a principal.</p>
                   <div className="grid grid-cols-4 gap-2">
                     {(formOnline.fotos || []).map((f, i) => (
-                      <div key={i} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200">
-                        <img src={f} alt="" className="w-full h-full object-cover" />
+                      <div key={i}
+                        draggable
+                        onDragStart={e => { e.dataTransfer.effectAllowed = 'move'; setDragIndex(i) }}
+                        onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDragOverIndex(i) }}
+                        onDrop={e => { e.preventDefault(); if (dragIndex !== null && dragIndex !== i) reordenarFotos(dragIndex, i); setDragIndex(null); setDragOverIndex(null) }}
+                        onDragEnd={() => { setDragIndex(null); setDragOverIndex(null) }}
+                        className={`relative aspect-square rounded-xl overflow-hidden cursor-grab active:cursor-grabbing select-none transition-all ${dragOverIndex === i ? 'border-2 border-gold-500 scale-105 shadow-lg' : 'border border-gray-200'} ${dragIndex === i ? 'opacity-40' : ''}`}>
+                        <img src={f} alt="" className="w-full h-full object-cover pointer-events-none" />
                         <button onClick={() => setFormOnline(prev => ({ ...prev, fotos: (prev.fotos || []).filter((_, idx) => idx !== i) }))} className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs">×</button>
                         {i === 0 && <span className="absolute bottom-1 left-1 bg-gold-500 text-white text-[10px] px-1 rounded">Principal</span>}
                       </div>
