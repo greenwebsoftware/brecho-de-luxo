@@ -138,6 +138,14 @@ checar(
     "**.supabase.co"
 )
 
+
+# ── Dropdowns produto online dinamicos ───────────────────────
+checar(
+    "Dropdowns produto online usam categorias do banco",
+    "src/app/admin-loja/page.tsx",
+    "categoriasLoja.filter(c => c.pai_slug === catSelecionada && c.tipo === 'grupo')",
+    "CATEGORIAS.find(c => c.slug === catSelecionada)?.grupos"
+)
 # ── Resultado ─────────────────────────────────────────────────
 print()
 for ok in oks:

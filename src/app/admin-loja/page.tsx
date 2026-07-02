@@ -72,6 +72,8 @@ export default function AdminLojaPage() {
   const [editandoOnline, setEditandoOnline] = useState<ProdutoOnline | null>(null)
   const [formOnline, setFormOnline] = useState<Partial<ProdutoOnline>>({ fotos: [], tamanhos: [], cores: [], visivel: true, destaque: false, peso: 0.3 })
   const [novaFoto, setNovaFoto] = useState('')
+  const [dragIndex, setDragIndex] = useState<number | null>(null)
+  const [dragOverIndex, setDragOverIndex] = useState<number | null>(null)
   const [catSelecionada, setCatSelecionada] = useState('')
   const [novoTamanho, setNovoTamanho] = useState('')
   const [novaCor, setNovaCor] = useState('')
@@ -246,6 +248,13 @@ export default function AdminLojaPage() {
       img.onerror = reject
       img.src = url
     })
+  }
+
+  const reordenarFotos = (fromIdx: number, toIdx: number) => {
+    const fotos = [...(formOnline.fotos || [])]
+    const [moved] = fotos.splice(fromIdx, 1)
+    fotos.splice(toIdx, 0, moved)
+    setFormOnline(prev => ({ ...prev, fotos }))
   }
 
   const uploadBlogImg = async (file: File) => {

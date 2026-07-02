@@ -17,6 +17,9 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
   relacionados: Partial<Produto>[]
 }) {
   const [imgAtiva, setImgAtiva] = useState(0)
+  const [lightboxAberto, setLightboxAberto] = useState(false)
+  const [lightboxIdx, setLightboxIdx] = useState(0)
+  const [zoomPos, setZoomPos] = useState<{x: number, y: number, src: string, idx: number} | null>(null)
   const [tamanhoSel, setTamanhoSel] = useState('')
   const [corSel, setCorSel] = useState('')
   const { adicionarItem } = useCarrinho()
@@ -47,7 +50,59 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
     })
   }
 
+
+  // Zoom flutuante e Lightbox
+  const ZoomFlutuante = zoomPos ? (
+    <div
+      className="fixed z-50 pointer-events-none"
+      style={{
+        left: '50%',
+        top: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '75vw',
+        height: '75vh',
+        maxWidth: '900px',
+        maxHeight: '900px',
+      }}>
+      <div className="w-full h-full rounded-3xl overflow-hidden shadow-2xl border-4 border-white">
+        <img src={zoomPos.src} alt="" className="w-full h-full object-contain bg-white" />
+      </div>
+    </div>
+  ) : null
+
+  const Lightbox = lightboxAberto ? (
+    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center"
+      onClick={() => setLightboxAberto(false)}>
+      <button className="absolute top-4 right-4 text-white text-3xl hover:text-gold-400 z-10">×</button>
+      <button
+        className="absolute left-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gold-400 z-10 px-4"
+        onClick={e => { e.stopPropagation(); setLightboxIdx(i => Math.max(0, i - 1)) }}>
+        ‹
+      </button>
+      <img
+        src={imagens[lightboxIdx]}
+        alt=""
+        className="max-w-[90vw] max-h-[90vh] object-contain rounded-2xl shadow-2xl"
+        onClick={e => e.stopPropagation()}
+      />
+      <button
+        className="absolute right-4 top-1/2 -translate-y-1/2 text-white text-4xl hover:text-gold-400 z-10 px-4"
+        onClick={e => { e.stopPropagation(); setLightboxIdx(i => Math.min(imagens.length - 1, i + 1)) }}>
+        ›
+      </button>
+      <div className="absolute bottom-4 flex gap-2">
+        {imagens.map((_, i) => (
+          <button key={i} onClick={e => { e.stopPropagation(); setLightboxIdx(i) }}
+            className={`w-2 h-2 rounded-full transition-all ${lightboxIdx === i ? 'bg-gold-400 w-4' : 'bg-white/50'}`} />
+        ))}
+      </div>
+    </div>
+  ) : null
+
   return (
+    <>
+    {ZoomFlutuante}
+    {Lightbox}
     <div className="min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
 
@@ -229,5 +284,6 @@ export default function ProdutoDetalhes({ produto, relacionados }: {
         )}
       </div>
     </div>
+  </>
   )
 }
